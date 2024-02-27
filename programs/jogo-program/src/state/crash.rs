@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use solana_program::{clock::UnixTimestamp, hash::hash};
+use solana_program::hash::hash;
 use orao_solana_vrf::state::Randomness;
 
 use crate::{error::JogoError, math::Fraction};
@@ -43,7 +43,7 @@ impl CrashGame {
     }
 
     pub(crate) fn set_win_rate(&mut self, win_rate: Fraction) -> Result<()> {
-        if (win_rate >= Fraction::one() || win_rate == Fraction::zero()) {
+        if win_rate >= Fraction::one() || win_rate == Fraction::zero() {
             return Err(JogoError::InvalidWinningRate.into());
         }
         self.win_rate = win_rate;
@@ -52,7 +52,7 @@ impl CrashGame {
     }
 
     pub(crate) fn set_max_odd(&mut self, max_odd: Fraction) -> Result<()> {
-        if (max_odd <= Fraction::one()) {
+        if max_odd <= Fraction::one() {
             return Err(JogoError::InvalidOdd.into());
         }
         self.max_odd = max_odd;
@@ -106,7 +106,7 @@ impl CrashGame {
     pub(crate) fn crash_point(&self, randomness_sig: &[u8]) -> Result<Fraction> {
         let sig_hash = hash(randomness_sig).to_bytes();
         let final_rand = u32::from_le_bytes(
-            <[u8; 4]>::try_from(sig_hash[..4]).unwrap()
+            <[u8; 4]>::try_from(&sig_hash[..4]).unwrap()
         );
         let scale = Fraction::new(1u64 << 32, final_rand as u64 + 1)?;
         self.win_rate.try_mul(scale)

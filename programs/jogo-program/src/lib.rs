@@ -6,6 +6,7 @@ pub mod instructions;
 use anchor_lang::prelude::*;
 
 use math::Fraction;
+use instructions::*;
 
 declare_id!("G4pgWxx2YTE2rGezW3cULwbAruCjh1TNYTu2Df6HCVP2");
 
@@ -13,49 +14,49 @@ declare_id!("G4pgWxx2YTE2rGezW3cULwbAruCjh1TNYTu2Df6HCVP2");
 pub mod jogo_program {
     use super::*;
 
-    pub fn init_admin(ctx: Context<instructions::InitAdmin>) -> Result<()> {
-        instructions::init_admin(ctx)
+    pub fn init_admin(ctx: Context<InitAdmin>) -> Result<()> {
+        _init_admin(ctx)
     }
-
-    pub fn init_vault(ctx: Context<instructions::InitVault>) -> Result<()> {
-        instructions::init_vault(ctx)
+    
+    pub fn init_vault(ctx: Context<InitVault>) -> Result<()> {
+        _init_vault(ctx)
     }
-
-    pub fn deposit(ctx: Context<instructions::Deposit>, amount: u64) -> Result<()> {
-        instructions::deposit(ctx, amount)
+    
+    pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
+        _deposit(ctx, amount)
     }
-
-    pub fn withdraw(ctx: Context<instructions::Withdraw>, amount: u64) -> Result<()> {
-        instructions::withdraw(ctx, amount)
+    
+    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
+        _withdraw(ctx, amount)
     }
-
+    
     pub fn init_crash_game(
-        ctx: Context<instructions::InitCrashGame>,
+        ctx: Context<InitCrashGame>,
         operator: Pubkey,
         win_rate: Fraction,
         max_odd: Fraction,
     ) -> Result<()> {
-        instructions::init_crash_game(ctx, operator, win_rate, max_odd)
+        _init_crash_game(ctx, operator, win_rate, max_odd)
     }
-
+    
     pub fn init_crash_bet(
-        ctx: Context<instructions::InitCrashBet>,
+        ctx: Context<InitCrashBet>,
         stake: u64,
         point: Option<Fraction>,
     ) -> Result<()> {
-        instructions::init_crash_bet(ctx, stake, point)
+        _init_crash_bet(ctx, stake, point)
     }
-
-    pub fn lock_crash_bet(ctx: Context<instructions::LockCrash>) -> Result<()> {
-        instructions::lock_crash(ctx)
+    
+    pub fn lock_crash_bet(ctx: Context<LockCrash>) -> Result<()> {
+        _lock_crash(ctx)
     }
-
+    
     pub fn settle_crash(
-        ctx: Context<instructions::SettleCrash>,
+        ctx: Context<SettleCrash>,
         randomness_sig: [u8; 64],
         bet_sig: Option<[u8; 64]>,
         point: Option<Fraction>,
     ) -> Result<()> {
-        instructions::settle_crash(ctx, randomness_sig, bet_sig, point)
+        _settle_crash(ctx, randomness_sig, bet_sig, point)
     }
 }

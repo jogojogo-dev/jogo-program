@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount, Transfer, transfer};
+use anchor_spl::token::{Token, TokenAccount, Transfer, transfer};
 use orao_solana_vrf::{state::Randomness, RANDOMNESS_ACCOUNT_SEED};
 
 use crate::error::JogoError;
@@ -22,7 +22,7 @@ pub struct InitCrashGame<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn init_crash_game(
+pub(crate) fn _init_crash_game(
     ctx: Context<InitCrashGame>,
     operator: Pubkey,
     win_rate: Fraction,
@@ -34,7 +34,7 @@ pub(crate) fn init_crash_game(
         win_rate,
         max_odd,
     )?;
-    ctx.accounts.game.set(game);
+    ctx.accounts.game.set_inner(game);
 
     Ok(())
 }
@@ -73,7 +73,7 @@ pub struct InitCrashBet<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn init_crash_bet(
+pub(crate) fn _init_crash_bet(
     ctx: Context<InitCrashBet>,
     stake: u64,
     point: Option<Fraction>,
@@ -96,7 +96,7 @@ pub(crate) fn init_crash_bet(
         point,
     )?;
     ctx.accounts.vault.bet(bet.stake, bet.reserve)?;
-    ctx.accounts.bet.set(bet);
+    ctx.accounts.bet.set_inner(bet);
 
     Ok(())
 }
@@ -127,7 +127,7 @@ pub struct LockCrash<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn lock_crash(ctx: Context<LockCrash>) -> Result<()> {
+pub(crate) fn _lock_crash(ctx: Context<LockCrash>) -> Result<()> {
     let game_key = ctx.accounts.game.key();
     let lock = ctx.accounts.game.lock(
         game_key,
@@ -148,7 +148,8 @@ pub(crate) fn lock_crash(ctx: Context<LockCrash>) -> Result<()> {
 pub struct SettleCrash<'info> {
     pub player: Signer<'info>,
     // jogo accounts
-    #[account(seeds = [b"authority", vault.admin.as_ref()], bump)]
+    pub admin: Account<'info, Admin>,
+    #[account(seeds = [b"authority", vault.admin.as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: UncheckedAccount<'info>,
     #[account(mut, has_one = supply_token_account)]
     pub vault: Account<'info, Vault>,
@@ -174,7 +175,7 @@ pub struct SettleCrash<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn settle_crash(
+pub(crate) fn _settle_crash(
     ctx: Context<SettleCrash>,
     randomness_sig: [u8; 64],
     bet_sig: Option<[u8; 64]>,
@@ -188,18 +189,26 @@ pub(crate) fn settle_crash(
     )?;
     if let Some(point) = point {
         // verify bet signature
+        let bet_sig = bet_sig.ok_or::<Error>(JogoError::NoBetSignature.into())?;
         ed25519_verify(
             &ctx.accounts.bet.message(point),
             &ctx.accounts.game.operator,
-            &bet_sig.ok_or(JogoError::NoBetSignature.into())?,
+            &bet_sig,
         )?;
     };
 
     let crash_point = ctx.accounts.game.crash_point(&randomness_sig)?;
-    let winning = ctx.accounts.bet.settle(point, crash_point)?;
+    let winning = ctx.accounts.bet.settle(point, crash_point);
     ctx.accounts.vault.settle(ctx.accounts.bet.stake, ctx.accounts.bet.reserve, winning);
-
+    
     if winning > 0 {
+        let signer_seeds = &[
+            &[
+                b"authority".as_slice(),
+                ctx.accounts.vault.admin.as_ref(),
+                &ctx.accounts.admin.auth_bump,
+            ][..],
+        ];
         let cpi_ctx = CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
             Transfer {
@@ -207,13 +216,7 @@ pub(crate) fn settle_crash(
                 to: ctx.accounts.player_token_account.to_account_info(),
                 authority: ctx.accounts.admin_authority.to_account_info(),
             },
-            &[
-                &[
-                    b"authority",
-                    ctx.accounts.vault.admin.as_ref(),
-                    &[ctx.bumps.admin_authority],
-                ],
-            ],
+            signer_seeds,
         );
         transfer(cpi_ctx, winning)
     } else {

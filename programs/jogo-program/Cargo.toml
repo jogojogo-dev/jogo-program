@@ -10,10 +10,10 @@ name = "jogo_program"
 
 [dependencies]
 anchor-lang = { version = "0.29.0", features = ["derive", "init-if-needed"] }
-anchor-spl = "0.29.0"
-solana-program = "=1.17.20"
+anchor-spl = { version = "0.29.0", features = ["associated_token", "mint", "token"] }
+solana-program = "1.18.3"
 orao-solana-vrf = { version = "0.2.5", features = ["cpi"] }
-bytemuck = { version = "1.14.2", features = ["derive"] }
+bytemuck = { version = "1.14.3", features = ["derive"] }
 
 [features]
 no-entrypoint = []
@@ -21,4 +21,4 @@ no-idl = []
 no-log-ix-name = []
 cpi = ["no-entrypoint", "anchor-lang/event-cpi"]
 debug = ["anchor-lang/anchor-debug"]
-default = []
+default = ["cpi"]

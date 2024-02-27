@@ -10,7 +10,7 @@ pub struct Fraction {
 
 impl Fraction {
     pub fn new(numerator: u64, denominator: u64) -> Result<Self> {
-        if (denominator == 0) {
+        if denominator == 0 {
             Err(JogoError::InvalidFraction.into())
         } else {
             Ok(Self {
@@ -51,22 +51,22 @@ impl Fraction {
     }
 
     pub fn mul_u64(self, other: u64) -> u64 {
-        (self.numerator as u128 * other / self.denominator as u128) as u64
+        (self.numerator as u128 * other as u128 / self.denominator as u128) as u64
     }
 }
 
 impl PartialEq for Fraction {
     fn eq(&self, other: &Self) -> bool {
-        let left = self.numerator as u128 * other.denominator;
-        let right = self.denominator as u128 * other.numerator;
+        let left = self.numerator as u128 * other.denominator as u128;
+        let right = self.denominator as u128 * other.numerator as u128;
         left == right
     }
 }
 
 impl PartialOrd for Fraction {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        let left = self.numerator as u128 * other.denominator;
-        let right = self.denominator as u128 * other.numerator;
+        let left = self.numerator as u128 * other.denominator as u128;
+        let right = self.denominator as u128 * other.numerator as u128;
         left.partial_cmp(&right)
     }
 }

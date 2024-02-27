@@ -22,7 +22,7 @@ impl Vault {
     }
 
     pub(crate) fn deposit(&mut self, amount: u64) -> Result<u64> {
-        if (amount == 0) {
+        if amount == 0 {
             return Err(JogoError::InvalidDepositAmount.into());
         }
 
@@ -39,13 +39,13 @@ impl Vault {
     }
 
     pub(crate) fn withdraw(&mut self, amount: u64) -> Result<u64> {
-        if (amount == 0) {
+        if amount == 0 {
             return Err(JogoError::InvalidWithdrawAmount.into());
         }
 
         let supply = self.supply();
         let withdrawal = (supply as u128 * amount as u128 / self.minted_lp as u128) as u64;
-        if (withdrawal > self.liquidity) {
+        if withdrawal > self.liquidity {
             return Err(JogoError::InsufficientLiquidity.into());
         }
         self.liquidity -= withdrawal;

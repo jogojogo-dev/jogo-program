@@ -10,7 +10,7 @@ pub struct InitVault<'info> {
     // jogo accounts
     #[account(has_one = owner)]
     pub admin: Account<'info, Admin>,
-    #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump)]
+    #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: UncheckedAccount<'info>,
     #[account(init, payer = owner, space = Vault::SIZE)]
     pub vault: Account<'info, Vault>,
@@ -35,7 +35,7 @@ pub struct InitVault<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn init_vault(ctx: Context<InitVault>) -> Result<()> {
+pub(crate) fn _init_vault(ctx: Context<InitVault>) -> Result<()> {
     let vault = Vault {
         admin: ctx.accounts.admin.key(),
         lp_token_mint: ctx.accounts.lp_token_mint.key(),
@@ -58,7 +58,7 @@ pub struct Deposit<'info> {
     pub user: Signer<'info>,
     // jogo accounts
     pub admin: Account<'info, Admin>,
-    #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump)]
+    #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: UncheckedAccount<'info>,
     #[account(mut, has_one = admin, has_one = lp_token_mint, has_one = supply_token_account)]
     pub vault: Account<'info, Vault>,
@@ -82,7 +82,7 @@ pub struct Deposit<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
+pub(crate) fn _deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     let cpi_ctx = CpiContext::new(
         ctx.accounts.token_program.to_account_info(),
         Transfer {
@@ -94,6 +94,13 @@ pub(crate) fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     transfer(cpi_ctx, amount)?;
 
     let minted_lp = ctx.accounts.vault.deposit(amount)?;
+    let signer_seeds = &[
+        &[
+            b"authority".as_slice(),
+            ctx.accounts.vault.admin.as_ref(),
+            &ctx.accounts.admin.auth_bump,
+        ][..],
+    ];
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         MintTo {
@@ -101,13 +108,7 @@ pub(crate) fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
             to: ctx.accounts.user_lp_token_account.to_account_info(),
             authority: ctx.accounts.admin_authority.to_account_info(),
         },
-        &[
-            &[
-                b"authority",
-                ctx.accounts.vault.admin.as_ref(),
-                &[ctx.accounts.admin.auth_bump],
-            ],
-        ],
+        signer_seeds,
     );
     mint_to(cpi_ctx, minted_lp)
 }
@@ -120,7 +121,7 @@ pub struct Withdraw<'info> {
     pub user: Signer<'info>,
     // jogo accounts
     pub admin: Account<'info, Admin>,
-    #[account(seeds = [b"authority", vault.admin.as_ref()], bump = admin.auth_bump)]
+    #[account(seeds = [b"authority", vault.admin.as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: UncheckedAccount<'info>,
     #[account(mut, has_one = admin, has_one = lp_token_mint, has_one = supply_token_account)]
     pub vault: Account<'info, Vault>,
@@ -138,7 +139,7 @@ pub struct Withdraw<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
+pub(crate) fn _withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     let cpi_ctx = CpiContext::new(
         ctx.accounts.token_program.to_account_info(),
         Burn {
@@ -150,6 +151,13 @@ pub(crate) fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     burn(cpi_ctx, amount)?;
 
     let withdrawal = ctx.accounts.vault.withdraw(amount)?;
+    let signer_seeds = &[
+        &[
+            b"authority".as_slice(),
+            ctx.accounts.vault.admin.as_ref(),
+            &ctx.accounts.admin.auth_bump,
+        ][..],
+    ];
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         Transfer {
@@ -157,13 +165,7 @@ pub(crate) fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
             to: ctx.accounts.user_token_account.to_account_info(),
             authority: ctx.accounts.admin_authority.to_account_info(),
         },
-        &[
-            &[
-                b"authority",
-                ctx.accounts.vault.admin.as_ref(),
-                &[ctx.accounts.admin.auth_bump],
-            ],
-        ],
+        signer_seeds,
     );
     transfer(cpi_ctx, withdrawal)
 }

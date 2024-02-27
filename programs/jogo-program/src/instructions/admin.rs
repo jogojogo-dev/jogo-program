@@ -15,10 +15,10 @@ pub struct InitAdmin<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn init_admin(ctx: Context<InitAdmin>) -> Result<()> {
+pub(crate) fn _init_admin(ctx: Context<InitAdmin>) -> Result<()> {
     let admin = Admin {
         owner: ctx.accounts.owner.key(),
-        auth_bump: ctx.bumps.admin_authority,
+        auth_bump: [ctx.bumps.admin_authority],
     };
     ctx.accounts.admin.set_inner(admin);
 
