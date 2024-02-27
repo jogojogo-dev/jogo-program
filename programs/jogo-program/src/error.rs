@@ -7,12 +7,8 @@ pub enum JogoError {
     InvalidFraction,
     #[msg("Fraction overflow")]
     FractionOverflow,
-    #[msg("Randomness not fulfilled")]
-    RandomnessNotFulfilled,
-    #[msg("Randomness already set")]
-    RandomnessAlreadySet,
-    #[msg("Randomness not set")]
-    RandomnessNotSet,
+    
+    /// Vault Errors
     #[msg("Invalid deposit amount")]
     InvalidDepositAmount,
     #[msg("Invalid withdraw amount")]
@@ -21,6 +17,8 @@ pub enum JogoError {
     InsufficientLiquidity,
 
     /// Crash Game Errors
+    #[msg("Randomness not fulfilled")]
+    RandomnessNotFulfilled,
     #[msg("No bet signature")]
     NoBetSignature,
     #[msg("Invalid winning rate")]
@@ -29,6 +27,4 @@ pub enum JogoError {
     InvalidOdd,
     #[msg("Invalid stake amount")]
     InvalidStakeAmount,
-    #[msg("Bet disabled")]
-    BetDisabled,
 }
