@@ -49,12 +49,8 @@ pub struct InitCrashBet<'info> {
     pub vault: Account<'info, Vault>,
     #[account(mut, has_one = vault)]
     pub game: Account<'info, CrashGame>,
-    #[account(
-        owner = system_program.key(),
-        seeds = [game.key().as_ref(), game.next_round.to_le_bytes().as_ref()],
-        bump,
-    )]
-    pub lock: UncheckedAccount<'info>,
+    #[account(seeds = [game.key().as_ref(), game.next_round.to_le_bytes().as_ref()], bump)]
+    pub lock: SystemAccount<'info>,
     #[account(
         init,
         payer = player,
@@ -150,7 +146,7 @@ pub struct SettleCrash<'info> {
     // jogo accounts
     pub admin: Account<'info, Admin>,
     #[account(seeds = [b"authority", vault.admin.as_ref()], bump = admin.auth_bump[0])]
-    pub admin_authority: UncheckedAccount<'info>,
+    pub admin_authority: SystemAccount<'info>,
     #[account(mut, has_one = supply_token_account)]
     pub vault: Account<'info, Vault>,
     #[account(has_one = vault)]
