@@ -6,15 +6,16 @@ solana_version = "1.18.3"
 seeds = false
 skip-lint = false
 
-[programs.localnet]
-jogo_program = "G4pgWxx2YTE2rGezW3cULwbAruCjh1TNYTu2Df6HCVP2"
+[programs.devnet]
+jogo_program = "9FLyauM11S1SRwM5kxNUYTYJMbrxdt41dYQF1bZHqcoP"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
-wallet = "/Users/geyunlong/.config/solana/id.json"
+cluster = "Devnet"
+wallet = ".keypairs/deployer.json"
 
 [scripts]
+init_vault = "yarn init_vault"
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

@@ -114,7 +114,7 @@ pub struct LockCrash<'info> {
     pub lock: Account<'info, CrashLock>,
     // vrf randomness
     #[account(
-        seeds = [RANDOMNESS_ACCOUNT_SEED.as_ref(), lock.key().as_ref()],
+        seeds = [RANDOMNESS_ACCOUNT_SEED, lock.key().as_ref()],
         bump,
         seeds::program = orao_solana_vrf::ID,
     )]

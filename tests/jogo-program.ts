@@ -8,9 +8,9 @@ describe("jogo-program", () => {
 
   const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
-  it("Is initialized!", async () => {
+  it("Init Admin", async () => {
     // Add your test here.
-    const tx = await program.methods.initialize().rpc();
+    const tx = await program.methods.initAdmin().rpc();
     console.log("Your transaction signature", tx);
   });
 });
