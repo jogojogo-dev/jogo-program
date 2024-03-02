@@ -7,7 +7,7 @@ pub struct InitAdmin<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     // jogo accounts
-    #[account(init, payer = owner, space = Admin::SIZE)]
+    #[account(init, payer = owner, space = 8 + Admin::SIZE)]
     pub admin: Account<'info, Admin>,
     #[account(seeds = [b"authority", admin.key().as_ref()], bump)]
     pub admin_authority: SystemAccount<'info>,

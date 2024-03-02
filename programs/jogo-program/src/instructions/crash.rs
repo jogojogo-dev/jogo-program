@@ -16,7 +16,7 @@ pub struct InitCrashGame<'info> {
     pub admin: Account<'info, Admin>,
     #[account(has_one = admin)]
     pub vault: Account<'info, Vault>,
-    #[account(init, payer = owner, space = CrashGame::SIZE)]
+    #[account(init, payer = owner, space = 8 + CrashGame::SIZE)]
     pub game: Account<'info, CrashGame>,
     // system accounts
     pub system_program: Program<'info, System>,
@@ -54,7 +54,7 @@ pub struct InitCrashBet<'info> {
     #[account(
         init,
         payer = player,
-        space = CrashBet::SIZE,
+        space = 8 + CrashBet::SIZE,
         seeds = [lock.key().as_ref(), player.key().as_ref()],
         bump,
     )]
@@ -107,7 +107,7 @@ pub struct LockCrash<'info> {
     #[account(
         init,
         payer = operator,
-        space = CrashLock::SIZE,
+        space = 8 + CrashLock::SIZE,
         seeds = [game.key().as_ref(), game.next_round.to_le_bytes().as_ref()],
         bump,
     )]

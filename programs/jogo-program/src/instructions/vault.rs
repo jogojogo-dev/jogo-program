@@ -12,7 +12,7 @@ pub struct InitVault<'info> {
     pub admin: Account<'info, Admin>,
     #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: SystemAccount<'info>,
-    #[account(init, payer = owner, space = Vault::SIZE)]
+    #[account(init, payer = owner, space = 8 + Vault::SIZE)]
     pub vault: Account<'info, Vault>,
     // token accounts
     pub supply_token_mint: Account<'info, Mint>,

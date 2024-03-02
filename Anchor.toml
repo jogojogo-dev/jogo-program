@@ -7,13 +7,13 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-jogo_program = "FHcfAFsrp1Y4i1U4RCoDSbbRBCtvnpkcyvVYgc5J5jc4"
+jogo_program = "7KX1U9vy7j649aTZExuVnB85N6aZ3ad3Dw3fJaXcDus5"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Devnet"
+cluster = "https://proud-methodical-wish.solana-devnet.quiknode.pro/f36a26ee7754889d2fd47258c6d8c27dab9454d6"
 wallet = ".keypairs/deployer.json"
 
 [scripts]
