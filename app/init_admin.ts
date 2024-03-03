@@ -23,7 +23,6 @@ async function main() {
         ],
         program.programId,
     );
-    console.log("admin:", adminKeypair.publicKey.toString());
 
     const txId = await program
         .methods
@@ -41,6 +40,7 @@ async function main() {
             maxRetries: 5,
         });
     console.log("transaction id:", txId);
+    console.log("admin:", adminKeypair.publicKey.toString());
 }
 
 main().catch((err) => {

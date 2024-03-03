@@ -1,9 +1,10 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
+import BN from "bn.js";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
 
@@ -16,7 +17,7 @@ async function main() {
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
     const privateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
-    const ownerKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
+    const userKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const adminAuthority = anchor.web3.PublicKey.findProgramAddressSync(
         [
@@ -25,33 +26,46 @@ async function main() {
         ],
         program.programId,
     );
-    const vaultKeypair = anchor.web3.Keypair.generate();
+    const vault = new anchor.web3.PublicKey(Deployment.vault);
+    const lpTokenMint = new anchor.web3.PublicKey(Deployment.lpTokenMint);
     const supplyTokenMint = new anchor.web3.PublicKey(Deployment.supplyToken);
-    const supplyTokenAccountKeypair = anchor.web3.Keypair.generate();
-    const lpTokenMintKeypair = anchor.web3.Keypair.generate();
+    const supplyTokenAccount = new anchor.web3.PublicKey(Deployment.supplyTokenAccount);
+    const userTokenAccount = await getAssociatedTokenAddress(
+        supplyTokenMint,
+        userKeypair.publicKey,
+        false,
+    );
+    const userLpTokenAccount = await getAssociatedTokenAddress(
+        lpTokenMint,
+        userKeypair.publicKey,
+        false,
+    );
 
+    // deposit 1000
+    const amount = new BN(1_000_000_000);
     const txId = await program
         .methods
-        .initVault()
+        .deposit(amount)
         .accounts({
-            owner: ownerKeypair.publicKey,
+            user: userKeypair.publicKey,
             admin: admin,
             adminAuthority: adminAuthority[0],
-            vault: vaultKeypair.publicKey,
-            supplyTokenMint: supplyTokenMint,
-            supplyTokenAccount: supplyTokenAccountKeypair.publicKey,
-            lpTokenMint: lpTokenMintKeypair.publicKey,
+            vault: vault,
+            lpTokenMint: lpTokenMint,
+            supplyTokenAccount: supplyTokenAccount,
+            userTokenAccount: userTokenAccount,
+            userLpTokenAccount: userLpTokenAccount,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([ownerKeypair, vaultKeypair, supplyTokenAccountKeypair, lpTokenMintKeypair])
+        .signers([userKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "finalized",
             maxRetries: 5,
         });
     console.log("transaction id:", txId);
-    console.log("vault:", vaultKeypair.publicKey.toString());
 }
 
 main().catch((err) => {

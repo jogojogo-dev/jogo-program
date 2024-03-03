@@ -70,10 +70,10 @@ pub struct Deposit<'info> {
     #[account(mut)]
     pub user_token_account: Account<'info, TokenAccount>,
     #[account(
-    init_if_needed,
-    payer = user,
-    associated_token::mint = lp_token_mint,
-    associated_token::authority = user,
+        init_if_needed,
+        payer = user,
+        associated_token::mint = lp_token_mint,
+        associated_token::authority = user,
     )]
     pub user_lp_token_account: Account<'info, TokenAccount>,
     pub associated_token_program: Program<'info, AssociatedToken>,

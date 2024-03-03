@@ -4,7 +4,7 @@
 ```shell
 anchor keys sync
 anchor build -p=jogo_program
-anchor deploy -p=jogo_program --program-keypair=target/deploy/jogo_program-keypair.json"
+anchor deploy -p=jogo_program --program-keypair=target/deploy/jogo_program-keypair.json
 anchor upgrade -p BaT67HoTDB1YM618xtzFvAJerFMqfvA4uwhe6jnFhPu3 target/deploy/jogo_program.so
 ```
 
