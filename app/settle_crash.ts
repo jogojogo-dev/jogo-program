@@ -19,6 +19,7 @@ async function main() {
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
     const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
+    const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
     const playerPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
     const playerKeypair = anchor.web3.Keypair.fromSecretKey(playerPrivateKey);
 
@@ -51,11 +52,11 @@ async function main() {
 
     // prepare instruction data
     const lockData = await program.account.crashLock.fetch(lock);
-    const randomnessSig = ed25519.sign(Uint8Array.from(lockData.randomness), operatorPrivateKey);
+    const randomnessSig = ed25519.sign(Uint8Array.from(lockData.randomness), operatorKeypair.secretKey);
     // player point 1.5
     const point = Fraction.fromNumber(3, 2);
     const betMessage = packBetMessage(bet.toBytes(), point);
-    const betSig = ed25519.sign(betMessage, operatorPrivateKey);
+    const betSig = ed25519.sign(betMessage, operatorKeypair.secretKey);
 
     const txId = await program
         .methods

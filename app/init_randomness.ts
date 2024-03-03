@@ -33,7 +33,8 @@ async function main() {
     const randomness = await vrf_program.waitFulfilled(seed, "confirmed");
     // Show the final crash point
     const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
-    const randomnessSig = ed25519.sign(randomness.randomness, operatorPrivateKey);
+    const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
+    const randomnessSig = ed25519.sign(randomness.randomness, operatorKeypair.secretKey);
     const crashPoint = computeCrashPoint(randomnessSig, Fraction.fromJson(gameData.winRate));
     console.log("crash point:", crashPoint.toFloat());
 }

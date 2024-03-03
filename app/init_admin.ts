@@ -17,10 +17,7 @@ async function main() {
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
     const adminKeypair = anchor.web3.Keypair.generate();
     const [adminAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-            Buffer.from("authority"),
-            adminKeypair.publicKey.toBuffer(),
-        ],
+        [Buffer.from("authority"), adminKeypair.publicKey.toBuffer()],
         program.programId,
     );
 

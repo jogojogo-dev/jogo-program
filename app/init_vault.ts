@@ -52,6 +52,8 @@ async function main() {
         });
     console.log("transaction id:", txId);
     console.log("vault:", vaultKeypair.publicKey.toString());
+    console.log("supply token account:", supplyTokenAccountKeypair.publicKey.toString());
+    console.log("lp token mint:", lpTokenMintKeypair.publicKey.toString());
 }
 
 main().catch((err) => {

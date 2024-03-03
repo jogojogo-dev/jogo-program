@@ -7,7 +7,7 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-jogo_program = "GXu1f6uQVrNyuKbEDnR92M5bZzPgRM65pEJ6z6AGQ6Hk"
+jogo_program = "4mQLtugPrzqJ6Md3yUybmjfQcxQkugndymVzt4xe8yQ3"
 
 [registry]
 url = "https://api.apr.dev"
@@ -17,12 +17,12 @@ cluster = "Devnet"
 wallet = ".keypairs/deployer.json"
 
 [scripts]
+deposit = "yarn ts-node app/deposit.ts"
 init_admin = "yarn ts-node app/init_admin.ts"
-init_vault = "yarn ts-node app/init_vault.ts"
+init_crash_bet = "yarn ts-node app/init_crash_bet.ts"
 init_crash_game = "yarn ts-node app/init_crash_game.ts"
 init_randomness = "yarn ts-node app/init_randomness.ts"
-init_crash_bet = "yarn ts-node app/init_crash_bet.ts"
+init_vault = "yarn ts-node app/init_vault.ts"
 lock_crash = "yarn ts-node app/lock_crash.ts"
 settle_crash = "yarn ts-node app/settle_crash.ts"
-deposit = "yarn ts-node app/deposit.ts"
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
