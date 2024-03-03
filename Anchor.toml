@@ -7,7 +7,7 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-jogo_program = "C4iy6tKumng6mtx7nqB72AhwxHYzbu9stXo6xvzLv5vZ"
+jogo_program = "GXu1f6uQVrNyuKbEDnR92M5bZzPgRM65pEJ6z6AGQ6Hk"
 
 [registry]
 url = "https://api.apr.dev"
@@ -18,5 +18,5 @@ wallet = ".keypairs/deployer.json"
 
 [scripts]
 init_admin = "yarn ts-node app/init_admin.ts"
-init_vault = "yarvn ts-node app/init_vault.ts"
+init_vault = "yarn ts-node app/init_vault.ts"
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
