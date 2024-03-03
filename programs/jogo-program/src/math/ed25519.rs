@@ -5,7 +5,7 @@ use crate::error::JogoError;
 /// Verify Ed25519Program instruction fields
 pub fn verify_ed25519_ix(ix: &Instruction, pubkey: &Pubkey, msg: &[u8], sig: &[u8]) -> Result<()> {
     if  ix.program_id != ED25519_ID ||  // The program id we expect
-        ix.accounts.is_empty() ||  // With no context accounts
+        !ix.accounts.is_empty() ||  // With no context accounts
         ix.data.len() != (16 + 64 + 32 + msg.len()) // And data of this size
     {
         return Err(JogoError::VerifyEd25519SignatureFailure.into());    // Otherwise, we can already throw err
