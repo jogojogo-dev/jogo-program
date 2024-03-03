@@ -25,7 +25,7 @@ async function main() {
         program.programId,
     );
     // vrf accounts
-    const seed = randomSeed(lock.toBytes(), Uint8Array.from(gameData.lastRandomness))
+    const seed = randomSeed(lock.toBytes(), new Uint8Array(gameData.lastRandomness))
     const randomness = randomnessAccountAddress(seed);
     
     const txId = await program

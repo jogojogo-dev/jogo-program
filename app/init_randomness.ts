@@ -23,7 +23,7 @@ async function main() {
         [game.toBuffer(), gameData.nextRound.toBuffer("le", 8)],
         jogo_program.programId,
     );
-    const seed = randomSeed(lock.toBytes(), Uint8Array.from(gameData.lastRandomness));
+    const seed = randomSeed(lock.toBytes(), new Uint8Array(gameData.lastRandomness));
 
     const builder = await vrf_program.request(seed);
     const [, tx] = await builder.rpc()

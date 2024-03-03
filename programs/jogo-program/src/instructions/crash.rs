@@ -158,6 +158,7 @@ pub struct SettleCrash<'info> {
     pub player_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     // system program
+    /// CHECK: this is a instructions sysvar account
     #[account(address = Instructions::id())]
     pub instructions: AccountInfo<'info>,
     pub system_program: Program<'info, System>,

@@ -19,6 +19,7 @@ async function main() {
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
     const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "").slice(0, 32);
+    const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
     const playerPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
     const playerKeypair = anchor.web3.Keypair.fromSecretKey(playerPrivateKey);
 
@@ -49,17 +50,32 @@ async function main() {
         false,
     );
 
-    // prepare instruction data
     const lockData = await program.account.crashLock.fetch(lock);
-    const randomnessSig = ed25519.sign(Uint8Array.from(lockData.randomness), operatorPrivateKey);
+    // prepare instruction data
+    const randomness = new Uint8Array(lockData.randomness);
+    const randomnessSig = ed25519.sign(randomness, operatorPrivateKey.slice(0, 32));
+    const instruction1 = anchor.web3.Ed25519Program.createInstructionWithPublicKey({
+        publicKey: operatorKeypair.publicKey.toBytes(),
+        message: randomness,
+        signature: randomnessSig,
+        instructionIndex: 0,
+    });
+
     // player point 1.5
     const point = Fraction.fromNumber(3, 2);
     const betMessage = packBetMessage(bet.toBytes(), point);
-    const betSig = ed25519.sign(betMessage, operatorPrivateKey);
+    const betSig = ed25519.sign(betMessage, operatorPrivateKey.slice(0, 32));
+    const instruction2 = anchor.web3.Ed25519Program.createInstructionWithPublicKey({
+        publicKey: operatorKeypair.publicKey.toBytes(),
+        message: betMessage,
+        signature: betSig,
+        instructionIndex: 1,
+    });
 
     const txId = await program
         .methods
         .settleCrash(Array.from(randomnessSig), Array.from(betSig), point)
+        .preInstructions([instruction1, instruction2])
         .accounts({
             player: playerKeypair.publicKey,
             admin: admin,
@@ -71,7 +87,7 @@ async function main() {
             supplyTokenAccount: supplyTokenAccount,
             playerTokenAccount: playerTokenAccount,
             tokenProgram: TOKEN_PROGRAM_ID,
-            ed25519Program: anchor.web3.Ed25519Program.programId,
+            instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([playerKeypair])
