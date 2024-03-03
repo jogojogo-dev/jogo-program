@@ -9,7 +9,7 @@ pub enum JogoError {
     FractionOverflow,
     #[msg("Failed to verify ED25519 instruction")]
     VerifyED25519InstructionFailure,
-    #[msg("Failed to verify ED25519 signature")]
+    #[msg("Failed to verify ED25519 header")]
     VerifyED25519HeaderFailure,
     #[msg("Failed to verify ED25519 data")]
     VerifyEd25519DataFailure,
