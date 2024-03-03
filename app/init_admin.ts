@@ -16,7 +16,7 @@ async function main() {
     const privateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
     const adminKeypair = anchor.web3.Keypair.generate();
-    const adminAuthority = anchor.web3.PublicKey.findProgramAddressSync(
+    const [adminAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
         [
             Buffer.from("authority"),
             adminKeypair.publicKey.toBuffer(),
@@ -30,7 +30,7 @@ async function main() {
         .accounts({
             owner: ownerKeypair.publicKey,
             admin: adminKeypair.publicKey,
-            adminAuthority: adminAuthority[0],
+            adminAuthority: adminAuthority,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([ownerKeypair, adminKeypair])

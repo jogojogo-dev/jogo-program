@@ -4,5 +4,5 @@ export const Deployment = {
     vault: "ComTREuu4aBF4J93WxFucrp2i1VN2kF2RBwkCiXzHFaF",
     lpTokenMint: "6ggFbUsfa4LkDiy3T8b1MBVVwJt7se1QnQbZuHhVyD4x",
     supplyTokenAccount: "5ShY9fAtxsHNtNDjAuW3NVqLtRnNNy2Dtgsftg8vHvoF",
-    crashGame: "",
+    crashGame: "9fy7wKjoAsz2UnVb7fS2bjBjHemssw32dzjtc1emU2kJ",
 }

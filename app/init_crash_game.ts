@@ -49,7 +49,7 @@ async function main() {
             maxRetries: 5,
         });
     console.log("transaction id:", txId);
-    console.log("crash game:", gameKeypair.publicKey);
+    console.log("crash game:", gameKeypair.publicKey.toString());
 }
 
 main().catch((err) => {
