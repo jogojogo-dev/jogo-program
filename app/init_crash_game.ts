@@ -42,7 +42,7 @@ async function main() {
             game: gameKeypair.publicKey,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([ownerKeypair])
+        .signers([ownerKeypair, gameKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "finalized",
