@@ -9,27 +9,27 @@ pub struct InitVault<'info> {
     pub owner: Signer<'info>,
     // jogo accounts
     #[account(has_one = owner)]
-    pub admin: Account<'info, Admin>,
+    pub admin: Box<Account<'info, Admin>>,
     #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: SystemAccount<'info>,
     #[account(init, payer = owner, space = 8 + Vault::SIZE)]
     pub vault: Box<Account<'info, Vault>>,
     // token accounts
-    pub supply_token_mint: Account<'info, Mint>,
+    pub supply_token_mint: Box<Account<'info, Mint>>,
     #[account(
         init,
         payer = owner,
         token::mint = supply_token_mint,
         token::authority = admin_authority,
     )]
-    pub supply_token_account: Account<'info, TokenAccount>,
+    pub supply_token_account: Box<Account<'info, TokenAccount>>,
     #[account(
         init,
         payer = owner,
         mint::decimals = supply_token_mint.decimals,
         mint::authority = admin_authority,
     )]
-    pub lp_token_mint: Account<'info, Mint>,
+    pub lp_token_mint: Box<Account<'info, Mint>>,
     pub token_program: Program<'info, Token>,
     // system program
     pub system_program: Program<'info, System>,
