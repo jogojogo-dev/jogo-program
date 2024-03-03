@@ -1,9 +1,11 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount, Transfer, transfer};
 use orao_solana_vrf::{state::Randomness, RANDOMNESS_ACCOUNT_SEED};
+use solana_program::sysvar::instructions::load_instruction_at_checked;
+use solana_program::sysvar::SysvarId;
 
 use crate::error::JogoError;
-use crate::math::{Fraction, Ed25519, ed25519_verify};
+use crate::math::{Fraction, verify_ed25519_ix};
 use crate::state::{Admin, Vault, CrashGame, CrashLock, CrashBet};
 
 #[derive(Accounts)]
@@ -156,7 +158,8 @@ pub struct SettleCrash<'info> {
     pub player_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     // system program
-    pub ed25519_program: Program<'info, Ed25519>,
+    #[account(address = Instructions::id())]
+    pub instructions: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -166,18 +169,22 @@ pub(crate) fn _settle_crash(
     bet_sig: Option<[u8; 64]>,
     point: Option<Fraction>,
 ) -> Result<()> {
+    let instruction = load_instruction_at_checked(0, &ctx.accounts.instructions)?;
     // verify randomness signature
-    ed25519_verify(
-        &ctx.accounts.lock.randomness,
+    verify_ed25519_ix(
+        &instruction,
         &ctx.accounts.game.operator,
-        &randomness_sig
+        &ctx.accounts.lock.randomness,
+        &randomness_sig,
     )?;
     if let Some(point) = point {
+        let instruction = load_instruction_at_checked(1, &ctx.accounts.instructions)?;
         // verify bet signature
         let bet_sig = bet_sig.ok_or::<Error>(JogoError::NoBetSignature.into())?;
-        ed25519_verify(
-            &CrashBet::message(&ctx.accounts.bet.key(), point),
+        verify_ed25519_ix(
+            &instruction,
             &ctx.accounts.game.operator,
+            &CrashBet::message(&ctx.accounts.bet.key(), point),
             &bet_sig,
         )?;
     };
