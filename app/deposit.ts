@@ -18,6 +18,7 @@ async function main() {
 
     const privateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
     const userKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
+    // global accounts
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const [adminAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
         [
@@ -27,6 +28,7 @@ async function main() {
         program.programId,
     );
     const vault = new anchor.web3.PublicKey(Deployment.vault);
+    // token accounts
     const lpTokenMint = new anchor.web3.PublicKey(Deployment.lpTokenMint);
     const supplyTokenMint = new anchor.web3.PublicKey(Deployment.supplyToken);
     const supplyTokenAccount = new anchor.web3.PublicKey(Deployment.supplyTokenAccount);

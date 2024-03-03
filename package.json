@@ -7,6 +7,7 @@
         "@coral-xyz/anchor": "^0.29.0"
     },
     "devDependencies": {
+        "@noble/curves": "^1.3.0",
         "@orao-network/solana-vrf": "^0.2.7-O",
         "@solana/buffer-layout": "^4.0.1",
         "@solana/spl-token": "^0.4.1",

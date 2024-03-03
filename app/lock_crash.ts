@@ -1,8 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
+import { randomnessAccountAddress } from "@orao-network/solana-vrf"
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
-import BN from "bn.js";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
 
@@ -15,40 +15,34 @@ async function main() {
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
     const privateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
-    const ownerKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
-    const admin = new anchor.web3.PublicKey(Deployment.admin);
-    const vault = new anchor.web3.PublicKey(Deployment.vault);
-    const gameKeypair = anchor.web3.Keypair.generate();
+    const operatorKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
+    // game accounts
+    const game = new anchor.web3.PublicKey(Deployment.crashGame);
+    const gameData = await program.account.crashGame.fetch(game);
+    const [lock] = anchor.web3.PublicKey.findProgramAddressSync(
+        [game.toBuffer(), gameData.nextRound.toBuffer("le")],
+        program.programId,
+    );
+    // vrf accounts
+    const randomness = randomnessAccountAddress(lock.toBuffer());
 
-    const operator = ownerKeypair.publicKey;
-    // 95% win rate
-    const win_rate = {
-        numerator: new BN(95),
-        denominator: new BN(100),
-    };
-    // max odd 10
-    const max_odd = {
-        numerator: new BN(10),
-        denominator: new BN(1),
-    }
     const txId = await program
         .methods
-        .initCrashGame(operator, win_rate, max_odd)
+        .lockCrashBet()
         .accounts({
-            owner: ownerKeypair.publicKey,
-            admin: admin,
-            vault: vault,
-            game: gameKeypair.publicKey,
+            operator: operatorKeypair.publicKey,
+            game: game,
+            lock: lock,
+            randomness: randomness,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([ownerKeypair, gameKeypair])
+        .signers([operatorKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "finalized",
             maxRetries: 5,
         });
     console.log("transaction id:", txId);
-    console.log("crash game:", gameKeypair.publicKey.toString());
 }
 
 main().catch((err) => {

@@ -15,7 +15,7 @@ async function main() {
     const jogo_program = anchor.workspace.JogoProgram as Program<JogoProgram>;
     const vrf_program = new Orao(anchor.AnchorProvider.env());
 
-    const gameRound = new BN(1);
+    const gameRound = new BN(0);
     const game = new anchor.web3.PublicKey(Deployment.crashGame);
     const [lock] = anchor.web3.PublicKey.findProgramAddressSync(
         [game.toBuffer(), gameRound.toBuffer("le")],
