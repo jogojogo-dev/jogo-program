@@ -53,8 +53,8 @@ export function packBetMessage(
 ) {
     let betMessage = new Uint8Array(48);
     betMessage.set(bet, 0);
-    betMessage.set(point.numerator.toArray("le", 8), 64);
-    betMessage.set(point.denominator.toArray("le", 8), 72);
+    betMessage.set(point.numerator.toArray("le", 8), 32);
+    betMessage.set(point.denominator.toArray("le", 8), 40);
     return betMessage;
 }
 
