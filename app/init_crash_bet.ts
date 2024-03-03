@@ -23,7 +23,7 @@ async function main() {
     const game = new anchor.web3.PublicKey(Deployment.crashGame);
     const gameData = await program.account.crashGame.fetch(game);
     const [lock] = anchor.web3.PublicKey.findProgramAddressSync(
-        [game.toBuffer(), gameData.nextRound.toBuffer("le")],
+        [game.toBuffer(), gameData.nextRound.toBuffer("le", 8)],
         program.programId,
     );
     const [bet] = anchor.web3.PublicKey.findProgramAddressSync(

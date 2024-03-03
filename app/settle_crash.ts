@@ -19,8 +19,8 @@ function packBetMessage(
     let betMessage = new Uint8Array(80);
     betMessage.set(player.toBytes(), 0);
     betMessage.set(lock.toBytes(), 32);
-    betMessage.set(point.numerator.toArray("le"), 64);
-    betMessage.set(point.denominator.toArray("le"), 72);
+    betMessage.set(point.numerator.toArray("le", 8), 64);
+    betMessage.set(point.denominator.toArray("le", 8), 72);
     return betMessage;
 }
 
@@ -45,7 +45,7 @@ async function main() {
     const game = new anchor.web3.PublicKey(Deployment.crashGame);
     const gameRound = new BN(0);
     const [lock] = anchor.web3.PublicKey.findProgramAddressSync(
-        [game.toBuffer(), gameRound.toBuffer("le")],
+        [game.toBuffer(), gameRound.toBuffer("le", 8)],
         program.programId,
     );
     const [bet] = anchor.web3.PublicKey.findProgramAddressSync(
