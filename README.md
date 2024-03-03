@@ -3,7 +3,7 @@
 ## Deploy
 ```shell
 anchor build -p=jogo_program
-deploy_jogo = "anchor deploy --program-name=jogo_program --program-keypair=target/deploy/jogo_program-keypair.json"
+anchor deploy -p=jogo_program --program-keypair=target/deploy/jogo_program-keypair.json"
 ```
 
 ## Note

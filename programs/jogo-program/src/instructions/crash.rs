@@ -145,9 +145,9 @@ pub struct SettleCrash<'info> {
     pub player: Signer<'info>,
     // jogo accounts
     pub admin: Account<'info, Admin>,
-    #[account(seeds = [b"authority", vault.admin.as_ref()], bump = admin.auth_bump[0])]
+    #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: SystemAccount<'info>,
-    #[account(mut, has_one = supply_token_account)]
+    #[account(mut, has_one = admin, has_one = supply_token_account)]
     pub vault: Account<'info, Vault>,
     #[account(has_one = vault)]
     pub game: Account<'info, CrashGame>,

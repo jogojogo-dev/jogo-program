@@ -17,6 +17,6 @@ cluster = "https://proud-methodical-wish.solana-devnet.quiknode.pro/f36a26ee7754
 wallet = ".keypairs/deployer.json"
 
 [scripts]
-deploy_jogo = "anchor deploy --program-name=jogo_program --program-keypair=target/deploy/jogo_program-keypair.json"
-init_vault = "yarn init_vault"
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+init_admin = "ts-node app/init_admin.ts"
+init_vault = "ts-node app/init_vault.ts"
