@@ -39,8 +39,9 @@ async function main() {
         false,
     );
 
-    // stake 100
-    const stakeAmount = new BN(100_000_000);
+    // stake 1
+    const stakeAmount = new BN(1_000_000);
+    // not preset point
     const point = null;
     const txId = await program
         .methods
