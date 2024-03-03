@@ -30,9 +30,9 @@ async function main() {
 
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
+    const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
     const playerPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
     const playerKeypair = anchor.web3.Keypair.fromSecretKey(playerPrivateKey);
-    const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
 
     // global accounts
     const admin = new anchor.web3.PublicKey(Deployment.admin);

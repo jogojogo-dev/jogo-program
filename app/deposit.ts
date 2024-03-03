@@ -16,7 +16,7 @@ async function main() {
 
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
-    const privateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
+    const privateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
     const userKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
     // global accounts
     const admin = new anchor.web3.PublicKey(Deployment.admin);

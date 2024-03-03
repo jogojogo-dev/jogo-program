@@ -28,8 +28,7 @@ async function main() {
     console.log("transaction id:", tx);
 
     // Await fulfilled randomness (default commitment is "finalized"):
-    const randomness = await vrf_program.waitFulfilled(seed);
-    console.log("randomness is " + randomness.fulfilled().toString());
+    await vrf_program.waitFulfilled(seed);
 }
 
 main().catch((err) => {

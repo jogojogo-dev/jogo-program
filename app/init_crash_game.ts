@@ -14,13 +14,14 @@ async function main() {
 
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
-    const privateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
-    const ownerKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
+    const ownerPrivateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
+    const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const vault = new anchor.web3.PublicKey(Deployment.vault);
     const gameKeypair = anchor.web3.Keypair.generate();
 
-    const operator = ownerKeypair.publicKey;
+    const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
+    const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
     // 95% win rate
     const win_rate = {
         numerator: new BN(95),
@@ -33,7 +34,7 @@ async function main() {
     }
     const txId = await program
         .methods
-        .initCrashGame(operator, win_rate, max_odd)
+        .initCrashGame(operatorKeypair.publicKey, win_rate, max_odd)
         .accounts({
             owner: ownerKeypair.publicKey,
             admin: admin,
