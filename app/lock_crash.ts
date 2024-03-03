@@ -14,7 +14,7 @@ async function main() {
 
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
-    const privateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
+    const privateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
     const operatorKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
     // game accounts
     const game = new anchor.web3.PublicKey(Deployment.crashGame);
@@ -39,7 +39,7 @@ async function main() {
         .signers([operatorKeypair])
         .rpc({
             skipPreflight: true,
-            commitment: "finalized",
+            commitment: "processed",
             maxRetries: 5,
         });
     console.log("transaction id:", txId);
