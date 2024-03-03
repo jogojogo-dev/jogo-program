@@ -8,10 +8,10 @@ pub fn verify_ed25519_ix(ix: &Instruction, pubkey: &Pubkey, msg: &[u8], sig: &[u
         !ix.accounts.is_empty() ||  // With no context accounts
         ix.data.len() != (16 + 64 + 32 + msg.len()) // And data of this size
     {
-        return Err(JogoError::VerifyEd25519SignatureFailure.into());    // Otherwise, we can already throw err
+        Err(JogoError::VerifyED25519InstructionFailure.into())
+    } else {
+        check_ed25519_data(&ix.data, pubkey.as_ref(), msg, sig)
     }
-
-    check_ed25519_data(&ix.data, pubkey.as_ref(), msg, sig)
 }
 
 /// Verify serialized Ed25519Program instruction data
@@ -56,12 +56,12 @@ fn check_ed25519_data(data: &[u8], pubkey: &[u8], msg: &[u8], sig: &[u8]) -> Res
         message_data_size               != exp_message_data_size.to_le_bytes()     ||
         message_instruction_index       != u16::MAX.to_le_bytes()
     {
-        return Err(JogoError::VerifyEd25519SignatureFailure.into());
+        return Err(JogoError::VerifyED25519HeaderFailure.into());
     }
 
     // Arguments
     if data_pubkey != pubkey || data_msg != msg || data_sig != sig {
-        Err(JogoError::VerifyEd25519SignatureFailure.into())
+        Err(JogoError::VerifyEd25519DataFailure.into())
     } else {
         Ok(())
     }
