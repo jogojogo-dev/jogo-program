@@ -18,7 +18,7 @@ async function main() {
 
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
-    const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "").slice(0, 32);
+    const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
     const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
     const playerPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
     const playerKeypair = anchor.web3.Keypair.fromSecretKey(playerPrivateKey);
@@ -53,7 +53,7 @@ async function main() {
     const lockData = await program.account.crashLock.fetch(lock);
     // prepare instruction data
     const randomness = new Uint8Array(lockData.randomness);
-    const randomnessSig = ed25519.sign(randomness, operatorPrivateKey.slice(0, 32));
+    const randomnessSig = ed25519.sign(randomness, operatorKeypair.secretKey.slice(0, 32));
     const instruction1 = anchor.web3.Ed25519Program.createInstructionWithPublicKey({
         publicKey: operatorKeypair.publicKey.toBytes(),
         message: randomness,
@@ -64,7 +64,7 @@ async function main() {
     // player point 1.5
     const point = Fraction.fromNumber(3, 2);
     const betMessage = packBetMessage(bet.toBytes(), point);
-    const betSig = ed25519.sign(betMessage, operatorPrivateKey.slice(0, 32));
+    const betSig = ed25519.sign(betMessage, operatorKeypair.secretKey.slice(0, 32));
     const instruction2 = anchor.web3.Ed25519Program.createInstructionWithPublicKey({
         publicKey: operatorKeypair.publicKey.toBytes(),
         message: betMessage,
