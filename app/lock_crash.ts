@@ -39,7 +39,7 @@ async function main() {
         .signers([operatorKeypair])
         .rpc({
             skipPreflight: true,
-            commitment: "processed",
+            commitment: "confirmed",
             maxRetries: 5,
         });
     console.log("transaction id:", txId);

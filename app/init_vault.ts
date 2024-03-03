@@ -47,7 +47,7 @@ async function main() {
         .signers([ownerKeypair, vaultKeypair, supplyTokenAccountKeypair, lpTokenMintKeypair])
         .rpc({
             skipPreflight: true,
-            commitment: "finalized",
+            commitment: "confirmed",
             maxRetries: 5,
         });
     console.log("transaction id:", txId);

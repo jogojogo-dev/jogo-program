@@ -45,7 +45,7 @@ async function main() {
         .signers([ownerKeypair, gameKeypair])
         .rpc({
             skipPreflight: true,
-            commitment: "finalized",
+            commitment: "confirmed",
             maxRetries: 5,
         });
     console.log("transaction id:", txId);

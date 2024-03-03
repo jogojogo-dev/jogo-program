@@ -4,7 +4,6 @@ import { Orao } from "@orao-network/solana-vrf"
 import * as dotenv from "dotenv";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
-import BN from "bn.js";
 
 dotenv.config();
 
