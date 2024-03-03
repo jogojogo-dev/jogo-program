@@ -5,6 +5,7 @@ import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
+import { randomSeed } from "./utils";
 
 dotenv.config();
 
@@ -24,8 +25,9 @@ async function main() {
         program.programId,
     );
     // vrf accounts
-    const randomness = randomnessAccountAddress(lock.toBuffer());
-
+    const seed = randomSeed(lock.toBytes(), Uint8Array.from(gameData.lastRandomness))
+    const randomness = randomnessAccountAddress(seed);
+    
     const txId = await program
         .methods
         .lockCrashBet()

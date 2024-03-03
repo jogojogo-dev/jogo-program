@@ -8,21 +8,9 @@ import BN from "bn.js";
 import { Buffer } from "buffer";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
+import { packBetMessage, Fraction } from "./utils";
 
 dotenv.config();
-
-function packBetMessage(
-    lock: anchor.web3.PublicKey,
-    player: anchor.web3.PublicKey,
-    point: { numerator: BN, denominator: BN },
-) {
-    let betMessage = new Uint8Array(80);
-    betMessage.set(player.toBytes(), 0);
-    betMessage.set(lock.toBytes(), 32);
-    betMessage.set(point.numerator.toArray("le", 8), 64);
-    betMessage.set(point.denominator.toArray("le", 8), 72);
-    return betMessage;
-}
 
 async function main() {
     // Configure the client to use the local cluster.
@@ -64,11 +52,9 @@ async function main() {
     // prepare instruction data
     const lockData = await program.account.crashLock.fetch(lock);
     const randomnessSig = ed25519.sign(Uint8Array.from(lockData.randomness), operatorPrivateKey);
-    const point = {
-        numerator: new BN(2),
-        denominator: new BN(1),
-    };
-    const betMessage = packBetMessage(lock, playerKeypair.publicKey, point);
+    // player point 1.5
+    const point = Fraction.fromNumber(3, 2);
+    const betMessage = packBetMessage(bet.toBytes(), point);
     const betSig = ed25519.sign(betMessage, operatorPrivateKey);
 
     const txId = await program

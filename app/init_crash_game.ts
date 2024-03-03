@@ -2,9 +2,9 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
-import BN from "bn.js";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
+import { Fraction } from "./utils";
 
 dotenv.config();
 
@@ -23,18 +23,12 @@ async function main() {
     const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
     const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
     // 95% win rate
-    const win_rate = {
-        numerator: new BN(95),
-        denominator: new BN(100),
-    };
+    const win_rate = Fraction.fromNumber(95, 100);
     // max odd 10
-    const max_odd = {
-        numerator: new BN(10),
-        denominator: new BN(1),
-    }
+    const max_odd = Fraction.fromNumber(10, 1);
     const txId = await program
         .methods
-        .initCrashGame(operatorKeypair.publicKey, win_rate, max_odd)
+        .initCrashGame(operatorKeypair.publicKey, win_rate.toJson(), max_odd.toJson())
         .accounts({
             owner: ownerKeypair.publicKey,
             admin: admin,

@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use solana_program::hash::hash;
+use solana_program::hash::{hash, hashv};
 use orao_solana_vrf::state::Randomness;
 
 use crate::{error::JogoError, math::Fraction};
@@ -11,6 +11,7 @@ pub struct CrashGame {
     pub win_rate: Fraction,
     pub max_odd: Fraction,
     pub next_round: u64,
+    pub last_randomness: [u8; 64],
 }
 
 impl CrashGame {
@@ -35,6 +36,7 @@ impl CrashGame {
             win_rate,
             max_odd,
             next_round: 0,
+            last_randomness: [0u8; 64],
         })
     }
 
@@ -62,18 +64,17 @@ impl CrashGame {
 
     pub(crate) fn lock(
         &mut self,
-        game: Pubkey,
         bump: u8,
         randomness: &Randomness,
     ) -> Result<CrashLock> {
         if let Some(randomness) = randomness.fulfilled() {
             let lock = CrashLock {
-                game,
                 bump,
                 round: self.next_round,
-                randomness: randomness.clone(),
+                randomness: *randomness,
             };
             self.next_round += 1;
+            self.last_randomness = *randomness;
 
             Ok(lock)
         } else {
@@ -83,8 +84,6 @@ impl CrashGame {
 
     pub(crate) fn bet(
         &self,
-        owner: Pubkey,
-        lock: Pubkey,
         bump: u8,
         stake: u64,
         point: Option<Fraction>,
@@ -93,14 +92,16 @@ impl CrashGame {
             Err(JogoError::InvalidStakeAmount.into())
         } else {
             Ok(CrashBet {
-                owner,
-                lock,
                 bump,
                 stake,
                 reserve: self.max_odd.mul_u64(stake),
                 point,
             })
         }
+    }
+
+    pub(crate) fn seed(&self, lock: &Pubkey) -> [u8; 32] {
+        hashv(&[lock.as_ref(), &self.last_randomness]).to_bytes()
     }
 
     pub(crate) fn crash_point(&self, randomness_sig: &[u8]) -> Result<Fraction> {
@@ -115,7 +116,6 @@ impl CrashGame {
 
 #[account]
 pub struct CrashLock {
-    pub game: Pubkey,
     pub bump: u8,
     pub round: u64,
     pub randomness: [u8; 64],
@@ -127,8 +127,6 @@ impl CrashLock {
 
 #[account]
 pub struct CrashBet {
-    pub owner: Pubkey,
-    pub lock: Pubkey,
     pub bump: u8,
     pub stake: u64,
     pub reserve: u64,
@@ -138,11 +136,10 @@ pub struct CrashBet {
 impl CrashBet {
     pub const SIZE: usize = 1 + std::mem::size_of::<Self>();
 
-    pub fn message(&self, point: Fraction) -> [u8; 80] {
-        let mut data = [0u8; 80];
-        data[..32].copy_from_slice(self.owner.as_ref());
-        data[32..64].copy_from_slice(self.lock.as_ref());
-        point.pack_into(&mut data[64..]);
+    pub(crate) fn message(bet: &Pubkey, point: Fraction) -> [u8; 48] {
+        let mut data = [0u8; 48];
+        data[..32].copy_from_slice(bet.as_ref());
+        point.pack_into(&mut data[32..]);
         data
     }
 

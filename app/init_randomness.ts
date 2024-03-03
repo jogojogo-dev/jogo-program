@@ -1,9 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Orao } from "@orao-network/solana-vrf"
+import { ed25519 } from "@noble/curves/ed25519";
+import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
+import { randomSeed, computeCrashPoint, Fraction } from "./utils";
 
 dotenv.config();
 
@@ -20,14 +23,19 @@ async function main() {
         [game.toBuffer(), gameData.nextRound.toBuffer("le", 8)],
         jogo_program.programId,
     );
-    const seed = lock.toBuffer();
+    const seed = randomSeed(lock.toBytes(), Uint8Array.from(gameData.lastRandomness));
 
     const builder = await vrf_program.request(seed);
     const [, tx] = await builder.rpc()
     console.log("transaction id:", tx);
 
     // Await fulfilled randomness (default commitment is "finalized"):
-    await vrf_program.waitFulfilled(seed);
+    const randomness = await vrf_program.waitFulfilled(seed, "confirmed");
+    // Show the final crash point
+    const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
+    const randomnessSig = ed25519.sign(randomness.randomness, operatorPrivateKey);
+    const crashPoint = computeCrashPoint(randomnessSig, Fraction.fromJson(gameData.winRate));
+    console.log("crash point:", crashPoint.toFloat());
 }
 
 main().catch((err) => {

@@ -84,13 +84,7 @@ pub(crate) fn _init_crash_bet(
     );
     transfer(cpi_ctx, stake)?;
 
-    let bet = ctx.accounts.game.bet(
-        ctx.accounts.player.key(),
-        ctx.accounts.lock.key(),
-        ctx.bumps.bet,
-        stake,
-        point,
-    )?;
+    let bet = ctx.accounts.game.bet(ctx.bumps.bet, stake, point)?;
     ctx.accounts.vault.bet(bet.stake, bet.reserve)?;
     ctx.accounts.bet.set_inner(bet);
 
@@ -114,7 +108,7 @@ pub struct LockCrash<'info> {
     pub lock: Account<'info, CrashLock>,
     // vrf randomness
     #[account(
-        seeds = [RANDOMNESS_ACCOUNT_SEED, lock.key().as_ref()],
+        seeds = [RANDOMNESS_ACCOUNT_SEED, &game.seed(&lock.key())],
         bump,
         seeds::program = orao_solana_vrf::ID,
     )]
@@ -124,12 +118,7 @@ pub struct LockCrash<'info> {
 }
 
 pub(crate) fn _lock_crash(ctx: Context<LockCrash>) -> Result<()> {
-    let game_key = ctx.accounts.game.key();
-    let lock = ctx.accounts.game.lock(
-        game_key,
-        ctx.bumps.lock,
-        &ctx.accounts.randomness,
-    )?;
+    let lock = ctx.accounts.game.lock(ctx.bumps.lock, &ctx.accounts.randomness)?;
     ctx.accounts.lock.set_inner(lock);
 
     Ok(())
@@ -187,7 +176,7 @@ pub(crate) fn _settle_crash(
         // verify bet signature
         let bet_sig = bet_sig.ok_or::<Error>(JogoError::NoBetSignature.into())?;
         ed25519_verify(
-            &ctx.accounts.bet.message(point),
+            &CrashBet::message(&ctx.accounts.bet.key(), point),
             &ctx.accounts.game.operator,
             &bet_sig,
         )?;
