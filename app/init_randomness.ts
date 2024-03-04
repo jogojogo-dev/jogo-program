@@ -30,7 +30,7 @@ async function main() {
     console.log("transaction id:", tx);
 
     // Await fulfilled randomness (default commitment is "finalized"):
-    const randomness = await vrf_program.waitFulfilled(seed, "confirmed");
+    const randomness = await vrf_program.waitFulfilled(seed);
     // Show the final crash point
     const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "").slice(0, 32);
     const randomnessSig = ed25519.sign(randomness.randomness, operatorPrivateKey);

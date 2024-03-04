@@ -7,12 +7,12 @@ pub enum JogoError {
     InvalidFraction,
     #[msg("Fraction overflow")]
     FractionOverflow,
-    #[msg("Failed to verify ED25519 instruction")]
-    VerifyED25519InstructionFailure,
-    #[msg("Failed to verify ED25519 header")]
-    VerifyED25519HeaderFailure,
-    #[msg("Failed to verify ED25519 data")]
-    VerifyEd25519DataFailure,
+    #[msg("Invalid ED25519 instruction")]
+    InvalidED25519Instruction,
+    #[msg("Incorrect ED25519 signature Signer")]
+    IncorrectED25519Signer,
+    #[msg("Invalid ED25519 message")]
+    InvalidED25519Message,
     
     /// Vault Errors
     #[msg("Invalid deposit amount")]
@@ -33,4 +33,6 @@ pub enum JogoError {
     InvalidOdd,
     #[msg("Invalid stake amount")]
     InvalidStakeAmount,
+    #[msg("Invalid bet message")]
+    InvalidBetMessage,
 }

@@ -20,11 +20,6 @@ impl Fraction {
         }
     }
 
-    pub fn pack_into(self, dst: &mut [u8]) {
-        dst[0..8].copy_from_slice(&self.numerator.to_le_bytes());
-        dst[8..16].copy_from_slice(&self.denominator.to_le_bytes());
-    }
-
     pub fn zero() -> Self {
         Self {
             numerator: 0,

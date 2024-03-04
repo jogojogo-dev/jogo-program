@@ -40,11 +40,11 @@ impl CrashGame {
         })
     }
 
-    pub(crate) fn set_operator(&mut self, operator: Pubkey) {
+    pub fn set_operator(&mut self, operator: Pubkey) {
         self.operator = operator;
     }
 
-    pub(crate) fn set_win_rate(&mut self, win_rate: Fraction) -> Result<()> {
+    pub fn set_win_rate(&mut self, win_rate: Fraction) -> Result<()> {
         if win_rate >= Fraction::one() || win_rate == Fraction::zero() {
             return Err(JogoError::InvalidWinningRate.into());
         }
@@ -53,7 +53,7 @@ impl CrashGame {
         Ok(())
     }
 
-    pub(crate) fn set_max_odd(&mut self, max_odd: Fraction) -> Result<()> {
+    pub fn set_max_odd(&mut self, max_odd: Fraction) -> Result<()> {
         if max_odd <= Fraction::one() {
             return Err(JogoError::InvalidOdd.into());
         }
@@ -136,11 +136,19 @@ pub struct CrashBet {
 impl CrashBet {
     pub const SIZE: usize = 1 + std::mem::size_of::<Self>();
 
-    pub(crate) fn message(bet: &Pubkey, point: Fraction) -> [u8; 48] {
-        let mut data = [0u8; 48];
-        data[..32].copy_from_slice(bet.as_ref());
-        point.pack_into(&mut data[32..]);
-        data
+    pub(crate) fn unpack_point(&self, bet: &Pubkey, msg: &[u8]) -> Result<Fraction> {
+        if let Some(point) = self.point {
+            Ok(point)
+        } else {
+            if msg.len() != 48 {
+                return Err(JogoError::InvalidBetMessage.into());
+            }
+            let msg_bet = Pubkey::try_from(&msg[..32]).unwrap();
+            if &msg_bet != bet {
+                return Err(JogoError::InvalidBetMessage.into());
+            }
+            Fraction::try_from_slice(&msg[32..]).map_err(|_| JogoError::InvalidBetMessage.into())
+        }
     }
 
     pub(crate) fn settle(

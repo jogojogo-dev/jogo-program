@@ -17,8 +17,8 @@ pub struct Vault {
 impl Vault {
     pub const SIZE: usize = std::mem::size_of::<Self>();
 
-    pub fn supply(&self) -> u64 {
-        return self.liquidity + self.reserve - self.stake;
+    fn supply(&self) -> u64 {
+        self.liquidity + self.reserve - self.stake
     }
 
     pub(crate) fn deposit(&mut self, amount: u64) -> Result<u64> {

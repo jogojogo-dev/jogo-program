@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 use math::Fraction;
 use instructions::*;
 
-declare_id!("Bvu3Xm5K3Kbv1eigZWLtY6N8uneD3TVesrj4ytKWPFha");
+declare_id!("2iFpZZLSRRMRNCQ7QDrZUhffpFx4gvYQ4A7u1P6DLGAd");
 
 #[program]
 pub mod jogo_program {
@@ -51,12 +51,7 @@ pub mod jogo_program {
         _lock_crash(ctx)
     }
     
-    pub fn settle_crash(
-        ctx: Context<SettleCrash>,
-        randomness_sig: [u8; 64],
-        bet_sig: Option<[u8; 64]>,
-        point: Option<Fraction>,
-    ) -> Result<()> {
-        _settle_crash(ctx, randomness_sig, bet_sig, point)
+    pub fn settle_crash(ctx: Context<SettleCrash>) -> Result<()> {
+        _settle_crash(ctx)
     }
 }

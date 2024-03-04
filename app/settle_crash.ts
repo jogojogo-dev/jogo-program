@@ -74,7 +74,7 @@ async function main() {
 
     const txId = await program
         .methods
-        .settleCrash(Array.from(randomnessSig), Array.from(betSig), point)
+        .settleCrash()
         .preInstructions([instruction1, instruction2])
         .accounts({
             player: playerKeypair.publicKey,

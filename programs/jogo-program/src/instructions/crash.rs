@@ -1,11 +1,9 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount, Transfer, transfer};
 use orao_solana_vrf::{state::Randomness, RANDOMNESS_ACCOUNT_SEED};
-use solana_program::sysvar::instructions::load_instruction_at_checked;
-use solana_program::sysvar::SysvarId;
+use solana_program::sysvar::{instructions::load_instruction_at_checked, SysvarId};
 
-use crate::error::JogoError;
-use crate::math::{Fraction, verify_ed25519_ix};
+use crate::math::{Fraction, deserialize_ed25519_instruction};
 use crate::state::{Admin, Vault, CrashGame, CrashLock, CrashBet};
 
 #[derive(Accounts)]
@@ -127,11 +125,6 @@ pub(crate) fn _lock_crash(ctx: Context<LockCrash>) -> Result<()> {
 }
 
 #[derive(Accounts)]
-#[instruction(
-    randomness_sig: [u8; 64],
-    bet_sig: Option<[u8; 64]>,
-    point: Option<Fraction>,
-)]
 pub struct SettleCrash<'info> {
     pub player: Signer<'info>,
     // jogo accounts
@@ -164,33 +157,21 @@ pub struct SettleCrash<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn _settle_crash(
-    ctx: Context<SettleCrash>,
-    randomness_sig: [u8; 64],
-    bet_sig: Option<[u8; 64]>,
-    point: Option<Fraction>,
-) -> Result<()> {
+pub(crate) fn _settle_crash(ctx: Context<SettleCrash>) -> Result<()> {
     let instruction = load_instruction_at_checked(0, &ctx.accounts.instructions)?;
-    // verify randomness signature
-    verify_ed25519_ix(
-        &instruction,
-        &ctx.accounts.game.operator,
-        &ctx.accounts.lock.randomness,
-        &randomness_sig,
-    )?;
-    if let Some(point) = point {
-        let instruction = load_instruction_at_checked(1, &ctx.accounts.instructions)?;
-        // verify bet signature
-        let bet_sig = bet_sig.ok_or::<Error>(JogoError::NoBetSignature.into())?;
-        verify_ed25519_ix(
-            &instruction,
-            &ctx.accounts.game.operator,
-            &CrashBet::message(&ctx.accounts.bet.key(), point),
-            &bet_sig,
-        )?;
+    let instruction_data = deserialize_ed25519_instruction(&instruction)?;
+    instruction_data.verify_signer(&ctx.accounts.game.operator)?;
+    instruction_data.verify_message(&ctx.accounts.lock.randomness)?;
+    let crash_point = ctx.accounts.game.crash_point(instruction_data.sig)?;
+    
+    let point = if let Ok(instruction) =
+        load_instruction_at_checked(1, &ctx.accounts.instructions) {
+        let instruction_data = deserialize_ed25519_instruction(&instruction)?;
+        instruction_data.verify_signer(&ctx.accounts.game.operator)?;
+        Some(ctx.accounts.bet.unpack_point(&ctx.accounts.bet.key(), instruction_data.msg)?)
+    } else {
+        None
     };
-
-    let crash_point = ctx.accounts.game.crash_point(&randomness_sig)?;
     let winning = ctx.accounts.bet.settle(point, crash_point);
     ctx.accounts.vault.settle(ctx.accounts.bet.stake, ctx.accounts.bet.reserve, winning);
     
