@@ -8,7 +8,7 @@ import BN from "bn.js";
 import { Buffer } from "buffer";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
-import {packBetMessage, pointNumberToBN} from "./utils";
+import { packBetMessage, pointNumberToBN } from "./utils";
 
 dotenv.config();
 
