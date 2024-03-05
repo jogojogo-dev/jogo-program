@@ -77,7 +77,6 @@ impl CrashGame {
             };
             self.next_round += 1;
             self.last_randomness = *randomness;
-
             Ok(lock)
         } else {
             Err(JogoError::RandomnessNotFulfilled.into())

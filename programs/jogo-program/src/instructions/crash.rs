@@ -40,6 +40,46 @@ pub(crate) fn _init_crash_game(
 }
 
 #[derive(Accounts)]
+pub struct LockCrash<'info> {
+    #[account(mut)]
+    pub operator: Signer<'info>,
+    // jogo accounts
+    #[account(mut, has_one = operator)]
+    pub game: Account<'info, CrashGame>,
+    #[account(
+        mut,
+        close = operator,
+        seeds = [game.key().as_ref(), last_lock.round.to_le_bytes().as_ref()],
+        bump = last_lock.bump,
+    )]
+    pub last_lock: Account<'info, CrashLock>,
+    #[account(
+        init,
+        payer = operator,
+        space = 8 + CrashLock::SIZE,
+        seeds = [game.key().as_ref(), game.next_round.to_le_bytes().as_ref()],
+        bump,
+    )]
+    pub lock: Account<'info, CrashLock>,
+    // vrf randomness
+    #[account(
+        seeds = [RANDOMNESS_ACCOUNT_SEED, &game.seed(&lock.key())],
+        bump,
+        seeds::program = orao_solana_vrf::ID,
+    )]
+    pub randomness: Account<'info, Randomness>,
+    // system accounts
+    pub system_program: Program<'info, System>,
+}
+
+pub(crate) fn _lock_crash(ctx: Context<LockCrash>) -> Result<()> {
+    let lock = ctx.accounts.game.lock(ctx.bumps.lock, &ctx.accounts.randomness)?;
+    ctx.accounts.lock.set_inner(lock);
+
+    Ok(())
+}
+
+#[derive(Accounts)]
 #[instruction(stake: u64, point: Option<u64>)]
 pub struct InitCrashBet<'info> {
     #[account(mut)]
@@ -87,39 +127,6 @@ pub(crate) fn _init_crash_bet(
     let bet = ctx.accounts.game.bet(ctx.bumps.bet, stake, point)?;
     ctx.accounts.vault.bet(bet.stake, bet.reserve)?;
     ctx.accounts.bet.set_inner(bet);
-
-    Ok(())
-}
-
-#[derive(Accounts)]
-pub struct LockCrash<'info> {
-    #[account(mut)]
-    pub operator: Signer<'info>,
-    // jogo accounts
-    #[account(mut, has_one = operator)]
-    pub game: Account<'info, CrashGame>,
-    #[account(
-        init,
-        payer = operator,
-        space = 8 + CrashLock::SIZE,
-        seeds = [game.key().as_ref(), game.next_round.to_le_bytes().as_ref()],
-        bump,
-    )]
-    pub lock: Account<'info, CrashLock>,
-    // vrf randomness
-    #[account(
-        seeds = [RANDOMNESS_ACCOUNT_SEED, &game.seed(&lock.key())],
-        bump,
-        seeds::program = orao_solana_vrf::ID,
-    )]
-    pub randomness: Account<'info, Randomness>,
-    // system accounts
-    pub system_program: Program<'info, System>,
-}
-
-pub(crate) fn _lock_crash(ctx: Context<LockCrash>) -> Result<()> {
-    let lock = ctx.accounts.game.lock(ctx.bumps.lock, &ctx.accounts.randomness)?;
-    ctx.accounts.lock.set_inner(lock);
 
     Ok(())
 }
