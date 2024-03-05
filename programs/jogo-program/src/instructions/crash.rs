@@ -162,7 +162,7 @@ pub(crate) fn _settle_crash(ctx: Context<SettleCrash>) -> Result<()> {
     let instruction_data = deserialize_ed25519_instruction(&instruction)?;
     instruction_data.verify_signer(&ctx.accounts.game.operator)?;
     instruction_data.verify_message(&ctx.accounts.lock.randomness)?;
-    msg!("SettleCrash: verified Ed25519 instruction 0");
+    msg!("SettleCrash: Verified Ed25519 instruction 0");
     let crash_point = ctx.accounts.game.crash_point(instruction_data.sig)?;
     
     let point = if let Ok(instruction) =
@@ -173,7 +173,7 @@ pub(crate) fn _settle_crash(ctx: Context<SettleCrash>) -> Result<()> {
             &ctx.accounts.bet.key(),
             instruction_data.msg,
         )?;
-        msg!("SettleCrash: verified Ed25519 instruction 1");
+        msg!("SettleCrash: Verified Ed25519 instruction 1");
         Some(point)
     } else {
         None
