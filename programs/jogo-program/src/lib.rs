@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 use math::Fraction;
 use instructions::*;
 
-declare_id!("2iFpZZLSRRMRNCQ7QDrZUhffpFx4gvYQ4A7u1P6DLGAd");
+declare_id!("4yCKwUKshCDMfpmygRNC2qzRtZq8moxuDL7vFriEqkPM");
 
 #[program]
 pub mod jogo_program {

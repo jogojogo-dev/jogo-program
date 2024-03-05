@@ -41,14 +41,13 @@ impl ED25519SignatureOffsets {
         let exp_public_key_offset: u16 = 16; // 2*u8 + 7*u16
         let exp_signature_offset: u16 = exp_public_key_offset + 32;
         let exp_message_data_offset: u16 = exp_signature_offset + 64;
-        let exp_message_data_size: u16 = msg_len as u16;
 
         self.signature_offset == exp_signature_offset &&
             self.signature_instruction_index == u16::MAX &&
             self.public_key_offset == exp_public_key_offset &&
             self.public_key_instruction_index == u16::MAX &&
             self.message_data_offset == exp_message_data_offset &&
-            self.message_data_size == exp_message_data_size &&
+            self.message_data_size == msg_len as u16 &&
             self.message_instruction_index == u16::MAX
     }
 }
@@ -57,7 +56,7 @@ impl ED25519SignatureOffsets {
 pub fn deserialize_ed25519_instruction(instruction: &Instruction) -> Result<ED25519Data> {
     if instruction.program_id != ED25519_ID
         || !instruction.accounts.is_empty()
-        || instruction.data.len() < 112 {
+        || instruction.data.len() <= 112 {
         return Err(JogoError::InvalidED25519Instruction.into());
     }
 
@@ -84,6 +83,14 @@ pub fn deserialize_ed25519_instruction(instruction: &Instruction) -> Result<ED25
     let sig = &data[48..112];
     let msg = &data[112..];
 
+    msg!("signature offset {}", offsets.signature_offset);
+    msg!("signature instruction index {}", offsets.signature_instruction_index);
+    msg!("public key offset {}", offsets.public_key_offset);
+    msg!("public key instruction index {}", offsets.public_key_instruction_index);
+    msg!("message data offset {}", offsets.message_data_offset);
+    msg!("message data size {}", offsets.message_data_size);
+    msg!("message instruction index {}", offsets.message_instruction_index);
+    
     if num_signatures == 1 && padding == 0 && offsets.is_valid(msg.len()) {
         Ok(ED25519Data { signer, sig, msg })
     } else {

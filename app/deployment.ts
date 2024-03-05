@@ -1,8 +1,8 @@
 export const Deployment = {
     supplyToken: "DczjfBUoJRuNom2Atg7JpNZ11ez1UVJ8qQ9QhNMzRC7k",
-    admin: "2Ddi9ucvGwoS5qpcYFcAidZA2T9M6jD8mR5tJxw264qt",
-    vault: "F7KVCwWBBueYxrEVHwiFa8ngNbX4L14xegjLE1fTZSeu",
-    lpTokenMint: "GDH3ASTjerXgZsiCYpVYtziC54d85CT6VreyJfTfXLVK",
-    supplyTokenAccount: "6ycPEZjvw6NKParrn6xcsuwadKY4UkDfa8v9gAzLX1xM",
-    crashGame: "9RSNY7eyh1cmEJgwtzwWsZDrxduonA8ttJqMUW7k7q1z",
+    admin: "FH1hNGaKDgoYsrz2485XHFBH6Yd6N89Nx7LFwnCe6ibR",
+    vault: "C3n1GuK6tAakq1Lv67mwNT2Um3sQAdaX9FtigAdsveo2",
+    lpTokenMint: "C1ngYgGUwnQHPgi8Sx53S35aruGkWaPgfNd6RbF4Sp3f",
+    supplyTokenAccount: "7nh9wDWTaLDi2ZczT932DvZqWH29VEAFbfPEZtGZfp6U",
+    crashGame: "B77UoUBw8wXMx4h5yfHDKByHryzuFZf4qXni914EfmSg",
 };

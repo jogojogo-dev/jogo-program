@@ -7,7 +7,7 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-jogo_program = "2iFpZZLSRRMRNCQ7QDrZUhffpFx4gvYQ4A7u1P6DLGAd"
+jogo_program = "4yCKwUKshCDMfpmygRNC2qzRtZq8moxuDL7vFriEqkPM"
 
 [registry]
 url = "https://api.apr.dev"
