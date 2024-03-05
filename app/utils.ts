@@ -1,5 +1,8 @@
 import { sha256 } from "@noble/hashes/sha256";
 import BN from "bn.js";
+import {p} from "@noble/curves/pasta";
+
+const POINT_PRECISION = 100;
 
 export class Fraction {
     numerator: BN;
@@ -49,12 +52,11 @@ export function randomSeed(lock: Uint8Array, lastRandomness: Uint8Array) {
 
 export function packBetMessage(
     bet: Uint8Array,
-    point: Fraction,
+    point: BN,
 ) {
-    let betMessage = new Uint8Array(48);
+    let betMessage = new Uint8Array(40);
     betMessage.set(bet, 0);
-    betMessage.set(point.numerator.toArray("le", 8), 32);
-    betMessage.set(point.denominator.toArray("le", 8), 40);
+    betMessage.set(point.toArray("le", 8), 32);
     return betMessage;
 }
 
@@ -63,6 +65,16 @@ export function computeCrashPoint(randomSig: Uint8Array, winRate: Fraction) {
     hasher.update(randomSig);
     const hash = hasher.digest();
     const finalRand = Buffer.from(hash.slice(0, 4)).readUInt32LE();
-    const scale = Fraction.fromNumber(Math.pow(2, 32), finalRand + 1);
-    return scale.mul(winRate)
+    return Fraction
+        .fromNumber(Math.pow(2, 32), finalRand + 1)
+        .mul(winRate)
+        .mulBN(new BN(POINT_PRECISION))
+}
+
+export function pointBNToNumber(point: BN) {
+    return point.toNumber() / POINT_PRECISION;
+}
+
+export function pointNumberToBN(point: number) {
+    return new BN(point * POINT_PRECISION)
 }

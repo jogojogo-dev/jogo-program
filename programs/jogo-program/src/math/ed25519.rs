@@ -1,19 +1,19 @@
 use anchor_lang::prelude::*;
-use solana_program::{instruction::Instruction, ed25519_program::ID as ED25519_ID};
+use solana_program::{instruction::Instruction, ed25519_program::ID as Ed25519_ID};
 use crate::error::JogoError;
 
-pub struct ED25519Data<'a> {
+pub struct Ed25519Data<'a> {
     pub signer: Pubkey,
     pub sig: &'a[u8],
     pub msg: &'a[u8],
 }
 
-impl<'a> ED25519Data<'a> {
+impl<'a> Ed25519Data<'a> {
     pub(crate) fn verify_signer(&self, signer: &Pubkey) -> Result<()> {
         if &self.signer == signer {
            Ok(())
         } else {
-           Err(JogoError::IncorrectED25519Signer.into())
+           Err(JogoError::IncorrectEd25519Signer.into())
         }
     }
     
@@ -21,12 +21,12 @@ impl<'a> ED25519Data<'a> {
         if self.msg == msg {
             Ok(())
         } else {
-            Err(JogoError::InvalidED25519Message.into())
+            Err(JogoError::InvalidEd25519Message.into())
         }
     }
 }
 
-pub struct ED25519SignatureOffsets {
+pub struct Ed25519SignatureOffsets {
     signature_offset: u16,             // offset to ed25519 signature of 64 bytes
     signature_instruction_index: u16,  // instruction index to find signature
     public_key_offset: u16,            // offset to public key of 32 bytes
@@ -36,7 +36,7 @@ pub struct ED25519SignatureOffsets {
     message_instruction_index: u16,    // index of instruction data to get message data
 }
 
-impl ED25519SignatureOffsets {
+impl Ed25519SignatureOffsets {
     fn is_valid(&self, msg_len: usize) -> bool {
         let exp_public_key_offset: u16 = 16; // 2*u8 + 7*u16
         let exp_signature_offset: u16 = exp_public_key_offset + 32;
@@ -52,24 +52,20 @@ impl ED25519SignatureOffsets {
     }
 }
 
-/// Load ED25519Program instruction data
-pub fn deserialize_ed25519_instruction(instruction: &Instruction) -> Result<ED25519Data> {
-    if instruction.program_id != ED25519_ID
-        || !instruction.accounts.is_empty()
-        || instruction.data.len() <= 112 {
-        return Err(JogoError::InvalidED25519Instruction.into());
+/// Deserialize Ed25519Program instruction data
+pub fn deserialize_ed25519_instruction(instruction: &Instruction) -> Result<Ed25519Data> {
+    if instruction.program_id != Ed25519_ID || instruction.data.len() <= 112 {
+        return Err(JogoError::InvalidEd25519Instruction.into());
     }
 
     // According to this layout used by the Ed25519Program
     // https://github.com/solana-labs/solana/blob/master/sdk/src/ed25519_instruction.rs#L32
 
-    // "Deserializing" byte slices
-
     let data = &instruction.data;
     let num_signatures = data[0]; // Byte  0
     let padding = data[1]; // Byte  1
 
-    let offsets = ED25519SignatureOffsets {
+    let offsets = Ed25519SignatureOffsets {
         signature_offset: u16::from_le_bytes([data[2], data[3]]), // Bytes 2,3
         signature_instruction_index: u16::from_le_bytes([data[4], data[5]]), // Bytes 4,5
         public_key_offset: u16::from_le_bytes([data[6], data[7]]), // Bytes 6,7
@@ -83,17 +79,9 @@ pub fn deserialize_ed25519_instruction(instruction: &Instruction) -> Result<ED25
     let sig = &data[48..112];
     let msg = &data[112..];
 
-    msg!("signature offset {}", offsets.signature_offset);
-    msg!("signature instruction index {}", offsets.signature_instruction_index);
-    msg!("public key offset {}", offsets.public_key_offset);
-    msg!("public key instruction index {}", offsets.public_key_instruction_index);
-    msg!("message data offset {}", offsets.message_data_offset);
-    msg!("message data size {}", offsets.message_data_size);
-    msg!("message instruction index {}", offsets.message_instruction_index);
-    
     if num_signatures == 1 && padding == 0 && offsets.is_valid(msg.len()) {
-        Ok(ED25519Data { signer, sig, msg })
+        Ok(Ed25519Data { signer, sig, msg })
     } else {
-        Err(JogoError::InvalidED25519Instruction.into())
+        Err(JogoError::InvalidEd25519Instruction.into())
     }
 }

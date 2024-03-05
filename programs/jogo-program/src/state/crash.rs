@@ -4,6 +4,8 @@ use orao_solana_vrf::state::Randomness;
 
 use crate::{error::JogoError, math::Fraction};
 
+const POINT_PRECISION: u64 = 100;
+
 #[account]
 pub struct CrashGame {
     pub vault: Pubkey,
@@ -45,21 +47,21 @@ impl CrashGame {
     }
 
     pub fn set_win_rate(&mut self, win_rate: Fraction) -> Result<()> {
-        if win_rate >= Fraction::one() || win_rate == Fraction::zero() {
-            return Err(JogoError::InvalidWinningRate.into());
+        if win_rate > Fraction::zero() && win_rate < Fraction::one() {
+            self.win_rate = win_rate;
+            Ok(())
+        } else {
+            Err(JogoError::InvalidWinningRate.into())
         }
-        self.win_rate = win_rate;
-
-        Ok(())
     }
 
     pub fn set_max_odd(&mut self, max_odd: Fraction) -> Result<()> {
-        if max_odd <= Fraction::one() {
-            return Err(JogoError::InvalidOdd.into());
+        if max_odd > Fraction::one() {
+            self.max_odd = max_odd;
+            Ok(())
+        } else {
+            Err(JogoError::InvalidOdd.into())
         }
-        self.max_odd = max_odd;
-
-        Ok(())
     }
 
     pub(crate) fn lock(
@@ -86,7 +88,7 @@ impl CrashGame {
         &self,
         bump: u8,
         stake: u64,
-        point: Option<Fraction>,
+        point: Option<u64>,
     ) -> Result<CrashBet> {
         if stake == 0 {
             Err(JogoError::InvalidStakeAmount.into())
@@ -104,13 +106,16 @@ impl CrashGame {
         hashv(&[lock.as_ref(), &self.last_randomness]).to_bytes()
     }
 
-    pub(crate) fn crash_point(&self, randomness_sig: &[u8]) -> Result<Fraction> {
+    pub(crate) fn crash_point(&self, randomness_sig: &[u8]) -> Result<u64> {
         let sig_hash = hash(randomness_sig).to_bytes();
         let final_rand = u32::from_le_bytes(
             <[u8; 4]>::try_from(&sig_hash[..4]).unwrap()
         );
-        let scale = Fraction::new(1u64 << 32, final_rand as u64 + 1)?;
-        self.win_rate.try_mul(scale)
+        let point = self.win_rate
+            .try_mul(Fraction::new(1u64 << 32, final_rand as u64 + 1)?)?
+            .mul_u64(POINT_PRECISION);
+
+        Ok(point)
     }
 }
 
@@ -130,35 +135,39 @@ pub struct CrashBet {
     pub bump: u8,
     pub stake: u64,
     pub reserve: u64,
-    pub point: Option<Fraction>,
+    pub point: Option<u64>,
 }
 
 impl CrashBet {
     pub const SIZE: usize = 1 + std::mem::size_of::<Self>();
 
-    pub(crate) fn unpack_point(&self, bet: &Pubkey, msg: &[u8]) -> Result<Fraction> {
+    pub(crate) fn unpack_point(&self, bet: &Pubkey, msg: &[u8]) -> Result<u64> {
         if let Some(point) = self.point {
             Ok(point)
         } else {
-            if msg.len() != 48 {
+            if msg.len() != 40 {
                 return Err(JogoError::InvalidBetMessage.into());
             }
             let msg_bet = Pubkey::try_from(&msg[..32]).unwrap();
             if &msg_bet != bet {
                 return Err(JogoError::InvalidBetMessage.into());
             }
-            Fraction::try_from_slice(&msg[32..]).map_err(|_| JogoError::InvalidBetMessage.into())
+
+            Ok(u64::from_le_bytes(msg[32..].as_ref().try_into().unwrap()))
         }
     }
 
     pub(crate) fn settle(
         &self,
-        point: Option<Fraction>,
-        crash_point: Fraction,
+        point: Option<u64>,
+        crash_point: u64,
     ) -> u64 {
         if let Some(point) = point.or(self.point) {
             if point <= crash_point {
-                return point.mul_u64(self.stake).min(self.reserve);
+                return Fraction::new(point, POINT_PRECISION)
+                    .unwrap()
+                    .mul_u64(self.stake)
+                    .min(self.reserve);
             }
         }
         0

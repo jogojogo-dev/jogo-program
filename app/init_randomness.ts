@@ -6,7 +6,7 @@ import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
-import { randomSeed, computeCrashPoint, Fraction } from "./utils";
+import {randomSeed, computeCrashPoint, pointBNToNumber, Fraction} from "./utils";
 
 dotenv.config();
 
@@ -35,7 +35,7 @@ async function main() {
     const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "").slice(0, 32);
     const randomnessSig = ed25519.sign(randomness.randomness, operatorPrivateKey);
     const crashPoint = computeCrashPoint(randomnessSig, Fraction.fromJson(gameData.winRate));
-    console.log("crash point:", crashPoint.toFloat());
+    console.log("crash point:", pointBNToNumber(crashPoint));
 }
 
 main().catch((err) => {

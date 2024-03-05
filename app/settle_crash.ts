@@ -8,7 +8,7 @@ import BN from "bn.js";
 import { Buffer } from "buffer";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
-import { packBetMessage, Fraction } from "./utils";
+import {packBetMessage, pointNumberToBN} from "./utils";
 
 dotenv.config();
 
@@ -58,18 +58,16 @@ async function main() {
         publicKey: operatorKeypair.publicKey.toBytes(),
         message: randomness,
         signature: randomnessSig,
-        instructionIndex: 0,
     });
 
     // player point 1.5
-    const point = Fraction.fromNumber(3, 2);
+    const point = pointNumberToBN(1.5);
     const betMessage = packBetMessage(bet.toBytes(), point);
     const betSig = ed25519.sign(betMessage, operatorKeypair.secretKey.slice(0, 32));
     const instruction2 = anchor.web3.Ed25519Program.createInstructionWithPublicKey({
         publicKey: operatorKeypair.publicKey.toBytes(),
         message: betMessage,
         signature: betSig,
-        instructionIndex: 1,
     });
 
     const txId = await program

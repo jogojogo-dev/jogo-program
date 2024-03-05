@@ -40,7 +40,7 @@ pub(crate) fn _init_crash_game(
 }
 
 #[derive(Accounts)]
-#[instruction(stake: u64, point: Option<Fraction>)]
+#[instruction(stake: u64, point: Option<u64>)]
 pub struct InitCrashBet<'info> {
     #[account(mut)]
     pub player: Signer<'info>,
@@ -72,7 +72,7 @@ pub struct InitCrashBet<'info> {
 pub(crate) fn _init_crash_bet(
     ctx: Context<InitCrashBet>,
     stake: u64,
-    point: Option<Fraction>,
+    point: Option<u64>,
 ) -> Result<()> {
     let cpi_ctx = CpiContext::new(
         ctx.accounts.token_program.to_account_info(),
@@ -162,13 +162,19 @@ pub(crate) fn _settle_crash(ctx: Context<SettleCrash>) -> Result<()> {
     let instruction_data = deserialize_ed25519_instruction(&instruction)?;
     instruction_data.verify_signer(&ctx.accounts.game.operator)?;
     instruction_data.verify_message(&ctx.accounts.lock.randomness)?;
+    msg!("SettleCrash: verified Ed25519 instruction 0");
     let crash_point = ctx.accounts.game.crash_point(instruction_data.sig)?;
     
     let point = if let Ok(instruction) =
         load_instruction_at_checked(1, &ctx.accounts.instructions) {
         let instruction_data = deserialize_ed25519_instruction(&instruction)?;
         instruction_data.verify_signer(&ctx.accounts.game.operator)?;
-        Some(ctx.accounts.bet.unpack_point(&ctx.accounts.bet.key(), instruction_data.msg)?)
+        let point = ctx.accounts.bet.unpack_point(
+            &ctx.accounts.bet.key(),
+            instruction_data.msg,
+        )?;
+        msg!("SettleCrash: verified Ed25519 instruction 1");
+        Some(point)
     } else {
         None
     };
