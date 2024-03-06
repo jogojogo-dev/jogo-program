@@ -155,8 +155,6 @@ pub struct SettleCrashGame<'info> {
     /// CHECK: this is a instructions sysvar account
     #[account(address = Instructions::id())]
     pub instructions: AccountInfo<'info>,
-    // TODO: remove system prpgram
-    pub system_program: Program<'info, System>,
 }
 
 pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
