@@ -67,7 +67,7 @@ async function main() {
 
     const txId = await program
         .methods
-        .settleCrash()
+        .settleCrashGame()
         .preInstructions([instruction1, instruction2])
         .accounts({
             player: playerKeypair.publicKey,
