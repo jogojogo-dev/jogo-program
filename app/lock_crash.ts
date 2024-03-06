@@ -24,11 +24,11 @@ async function main() {
         [game.toBuffer(), gameData.nextRound.toBuffer("le", 8)],
         program.programId,
     );
-    const lockData = await program.account.crashLock.fetch(lock);
-    const [lastLock] = anchor.web3.PublicKey.findProgramAddressSync(
-        [game.toBuffer(), lockData.round.toBuffer("le", 8)],
-        program.programId,
-    );
+    // const lockData = await program.account.crashLock.fetch(lock);
+    // const [lastLock] = anchor.web3.PublicKey.findProgramAddressSync(
+    //     [game.toBuffer(), lockData.round.toBuffer("le", 8)],
+    //     program.programId,
+    // );
 
     // vrf accounts
     const seed = randomSeed(lock.toBytes(), new Uint8Array(gameData.lastRandomness))
@@ -40,7 +40,6 @@ async function main() {
         .accounts({
             operator: operatorKeypair.publicKey,
             game: game,
-            lastLock: lastLock,
             lock: lock,
             randomness: randomness,
             systemProgram: anchor.web3.SystemProgram.programId,

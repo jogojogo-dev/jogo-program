@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 use math::Fraction;
 use instructions::*;
 
-declare_id!("CxomvBTcp32f75sgtxCZzzeYpfzGRtubquuQhodh79Nw");
+declare_id!("8hAkmnnhfDVQB5ub6ZGcgoMkZkrfeFkGEbagBSKBRSmd");
 
 #[program]
 pub mod jogo_program {
@@ -39,16 +39,16 @@ pub mod jogo_program {
         _init_crash_game(ctx, operator, win_rate, max_odd)
     }
 
-    pub fn lock_crash(ctx: Context<LockCrash>) -> Result<()> {
-        _lock_crash(ctx)
+    pub fn new_crash_game(ctx: Context<NewCrashGame>) -> Result<()> {
+        _new_crash_game(ctx)
     }
     
-    pub fn init_crash_bet(
-        ctx: Context<InitCrashBet>,
+    pub fn create_crash_bet(
+        ctx: Context<CreateCrashBet>,
         stake: u64,
         point: Option<u64>,
     ) -> Result<()> {
-        _init_crash_bet(ctx, stake, point)
+        _create_crash_bet(ctx, stake, point)
     }
     
     pub fn settle_crash(ctx: Context<SettleCrash>) -> Result<()> {

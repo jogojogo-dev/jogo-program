@@ -40,7 +40,7 @@ pub(crate) fn _init_crash_game(
 }
 
 #[derive(Accounts)]
-pub struct LockCrash<'info> {
+pub struct NewCrashGame<'info> {
     #[account(mut)]
     pub operator: Signer<'info>,
     // jogo accounts
@@ -65,7 +65,7 @@ pub struct LockCrash<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn _lock_crash(ctx: Context<LockCrash>) -> Result<()> {
+pub(crate) fn _new_crash_game(ctx: Context<NewCrashGame>) -> Result<()> {
     let lock = ctx.accounts.game.lock(ctx.bumps.lock, &ctx.accounts.randomness)?;
     ctx.accounts.lock.set_inner(lock);
 
@@ -74,7 +74,7 @@ pub(crate) fn _lock_crash(ctx: Context<LockCrash>) -> Result<()> {
 
 #[derive(Accounts)]
 #[instruction(stake: u64, point: Option<u64>)]
-pub struct InitCrashBet<'info> {
+pub struct CreateCrashBet<'info> {
     #[account(mut)]
     pub player: Signer<'info>,
     // jogo accounts
@@ -102,8 +102,8 @@ pub struct InitCrashBet<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn _init_crash_bet(
-    ctx: Context<InitCrashBet>,
+pub(crate) fn _create_crash_bet(
+    ctx: Context<CreateCrashBet>,
     stake: u64,
     point: Option<u64>,
 ) -> Result<()> {
