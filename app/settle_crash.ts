@@ -1,7 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { ed25519 } from "@noble/curves/ed25519";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import BN from "bn.js";
@@ -53,21 +52,17 @@ async function main() {
     const lockData = await program.account.crashLock.fetch(lock);
     // prepare instruction data
     const randomness = new Uint8Array(lockData.randomness);
-    const randomnessSig = ed25519.sign(randomness, operatorKeypair.secretKey.slice(0, 32));
-    const instruction1 = anchor.web3.Ed25519Program.createInstructionWithPublicKey({
-        publicKey: operatorKeypair.publicKey.toBytes(),
+    const instruction1 = anchor.web3.Ed25519Program.createInstructionWithPrivateKey({
+        privateKey: operatorKeypair.secretKey.slice(0, 32),
         message: randomness,
-        signature: randomnessSig,
     });
 
     // player point 1.5
     const point = pointNumberToBN(1.5);
     const betMessage = packBetMessage(bet.toBytes(), point);
-    const betSig = ed25519.sign(betMessage, operatorKeypair.secretKey.slice(0, 32));
-    const instruction2 = anchor.web3.Ed25519Program.createInstructionWithPublicKey({
-        publicKey: operatorKeypair.publicKey.toBytes(),
+    const instruction2 = anchor.web3.Ed25519Program.createInstructionWithPrivateKey({
+        privateKey: operatorKeypair.secretKey.slice(0, 32),
         message: betMessage,
-        signature: betSig,
     });
 
     const txId = await program
