@@ -3,7 +3,6 @@ import { Program } from "@coral-xyz/anchor";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
-import BN from "bn.js";
 import { Buffer } from "buffer";
 import { JogoProgram } from "../target/types/jogo_program";
 import { Deployment } from "./deployment";
@@ -31,9 +30,10 @@ async function main() {
     const vault = new anchor.web3.PublicKey(Deployment.vault);
     // game accounts
     const game = new anchor.web3.PublicKey(Deployment.crashGame);
-    const gameRound = new BN(0);
+    const gameData = await program.account.crashGame.fetch(game);
+    const round = gameData.nextRound.subn(1);
     const [lock] = anchor.web3.PublicKey.findProgramAddressSync(
-        [game.toBuffer(), gameRound.toBuffer("le", 8)],
+        [game.toBuffer(), round.toBuffer("le", 8)],
         program.programId,
     );
     const [bet] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -53,7 +53,7 @@ async function main() {
     // prepare instruction data
     const randomness = new Uint8Array(lockData.randomness);
     const instruction1 = anchor.web3.Ed25519Program.createInstructionWithPrivateKey({
-        privateKey: operatorKeypair.secretKey.slice(0, 32),
+        privateKey: operatorKeypair.secretKey,
         message: randomness,
     });
 
@@ -61,7 +61,7 @@ async function main() {
     const point = pointNumberToBN(1.5);
     const betMessage = packBetMessage(bet.toBytes(), point);
     const instruction2 = anchor.web3.Ed25519Program.createInstructionWithPrivateKey({
-        privateKey: operatorKeypair.secretKey.slice(0, 32),
+        privateKey: operatorKeypair.secretKey,
         message: betMessage,
     });
 

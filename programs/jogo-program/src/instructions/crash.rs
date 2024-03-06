@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount, Transfer, transfer};
 use orao_solana_vrf::{state::Randomness, RANDOMNESS_ACCOUNT_SEED};
 use solana_program::sysvar::{instructions::load_instruction_at_checked, SysvarId};
+use solana_program::sysvar::instructions::load_current_index_checked;
 
 use crate::math::{Fraction, deserialize_ed25519_instruction};
 use crate::state::{Admin, Vault, CrashGame, CrashLock, CrashBet};
@@ -154,11 +155,13 @@ pub struct SettleCrashGame<'info> {
     /// CHECK: this is a instructions sysvar account
     #[account(address = Instructions::id())]
     pub instructions: AccountInfo<'info>,
+    // TODO: remove system prpgram
     pub system_program: Program<'info, System>,
 }
 
 pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
-    let instruction = load_instruction_at_checked(0, &ctx.accounts.instructions)?;
+    let index = load_current_index_checked(&ctx.accounts.instructions)? as usize;
+    let instruction = load_instruction_at_checked(index - 2, &ctx.accounts.instructions)?;
     let instruction_data = deserialize_ed25519_instruction(&instruction)?;
     instruction_data.verify_signer(&ctx.accounts.game.operator)?;
     instruction_data.verify_message(&ctx.accounts.lock.randomness)?;
@@ -166,7 +169,7 @@ pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
     let crash_point = ctx.accounts.game.crash_point(instruction_data.sig)?;
     
     let point = if let Ok(instruction) =
-        load_instruction_at_checked(1, &ctx.accounts.instructions) {
+        load_instruction_at_checked(index - 1, &ctx.accounts.instructions) {
         let instruction_data = deserialize_ed25519_instruction(&instruction)?;
         instruction_data.verify_signer(&ctx.accounts.game.operator)?;
         let point = ctx.accounts.bet.unpack_point(
