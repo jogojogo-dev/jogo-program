@@ -156,11 +156,7 @@ impl CrashBet {
         }
     }
 
-    pub(crate) fn settle(
-        &self,
-        point: Option<u64>,
-        crash_point: u64,
-    ) -> u64 {
+    pub(crate) fn settle(&self, point: Option<u64>, crash_point: u64) -> u64 {
         if let Some(point) = point.or(self.point) {
             if point <= crash_point {
                 return Fraction::new(point, POINT_PRECISION)

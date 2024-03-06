@@ -47,13 +47,6 @@ pub struct LockCrash<'info> {
     #[account(mut, has_one = operator)]
     pub game: Account<'info, CrashGame>,
     #[account(
-        mut,
-        close = operator,
-        seeds = [game.key().as_ref(), last_lock.round.to_le_bytes().as_ref()],
-        bump = last_lock.bump,
-    )]
-    pub last_lock: Account<'info, CrashLock>,
-    #[account(
         init,
         payer = operator,
         space = 8 + CrashLock::SIZE,
@@ -209,4 +202,25 @@ pub(crate) fn _settle_crash(ctx: Context<SettleCrash>) -> Result<()> {
     } else {
         Ok(())
     }
+}
+
+#[derive(Accounts)]
+pub struct CloseCrashLock<'info> {
+    #[account(mut)]
+    pub operator: Signer<'info>,
+    // jogo accounts
+    #[account(mut, has_one = operator)]
+    pub game: Account<'info, CrashGame>,
+    #[account(
+        mut,
+        close = operator,
+        seeds = [game.key().as_ref(), lock.round.to_le_bytes().as_ref()],
+        bump = lock.bump,
+        constraint = lock.round + 1 < game.next_round,
+    )]
+    pub lock: Account<'info, CrashLock>,
+}
+
+pub(crate) fn _close_crash_lock(_ctx: Context<CloseCrashLock>) -> Result<()> {
+    Ok(())
 }

@@ -54,4 +54,8 @@ pub mod jogo_program {
     pub fn settle_crash(ctx: Context<SettleCrash>) -> Result<()> {
         _settle_crash(ctx)
     }
+    
+    pub fn close_crash_lock(ctx: Context<CloseCrashLock>) -> Result<()> {
+        _close_crash_lock(ctx)
+    }
 }
