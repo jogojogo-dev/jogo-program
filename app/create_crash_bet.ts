@@ -45,7 +45,7 @@ async function main() {
     const point = null;
     const txId = await program
         .methods
-        .initCrashBet(stakeAmount, point)
+        .createCrashBet(stakeAmount, point)
         .accounts({
             player: playerKeypair.publicKey,
             vault: vault,
@@ -59,7 +59,7 @@ async function main() {
         })
         .signers([playerKeypair])
         .rpc({
-            skipPreflight: true,
+            skipPreflight: false,
             commitment: "confirmed",
             maxRetries: 5,
         });

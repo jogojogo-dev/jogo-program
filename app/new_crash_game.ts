@@ -36,7 +36,7 @@ async function main() {
     
     const txId = await program
         .methods
-        .lockCrash()
+        .newCrashGame()
         .accounts({
             operator: operatorKeypair.publicKey,
             game: game,

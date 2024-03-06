@@ -125,7 +125,7 @@ pub(crate) fn _create_crash_bet(
 }
 
 #[derive(Accounts)]
-pub struct SettleCrash<'info> {
+pub struct SettleCrashGame<'info> {
     pub player: Signer<'info>,
     // jogo accounts
     pub admin: Account<'info, Admin>,
@@ -157,7 +157,7 @@ pub struct SettleCrash<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub(crate) fn _settle_crash(ctx: Context<SettleCrash>) -> Result<()> {
+pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
     let instruction = load_instruction_at_checked(0, &ctx.accounts.instructions)?;
     let instruction_data = deserialize_ed25519_instruction(&instruction)?;
     instruction_data.verify_signer(&ctx.accounts.game.operator)?;
