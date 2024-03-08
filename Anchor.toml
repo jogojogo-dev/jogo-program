@@ -13,7 +13,7 @@ jogo_program = "8PqrU7ZDc66JcrwiexCqEavjeZMYBoR9ySFdXQZQgAUw"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Devnet"
+cluster = "https://jogojogo-dev2b46-932d.devnet.rpcpool.com/63e7440c-e69c-4b29-9b03-d7264f361209"
 wallet = ".keypairs/deployer.json"
 
 [scripts]

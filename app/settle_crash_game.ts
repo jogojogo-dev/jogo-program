@@ -81,7 +81,6 @@ async function main() {
             playerTokenAccount: playerTokenAccount,
             tokenProgram: TOKEN_PROGRAM_ID,
             instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-            systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([playerKeypair])
         .rpc({
