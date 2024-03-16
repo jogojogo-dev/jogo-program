@@ -149,7 +149,7 @@ pub struct SettleCrashGame<'info> {
     )]
     pub bet: Account<'info, CrashBet>,
     // token accounts
-    pub supply_chip_mint: InterfaceAccount<'info, Mint>,
+    pub chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
     pub supply_chip_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
@@ -198,13 +198,13 @@ pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
             ctx.accounts.token_program.to_account_info(),
             TransferChecked {
                 from: ctx.accounts.supply_chip_account.to_account_info(),
-                mint: ctx.accounts.supply_chip_mint.to_account_info(),
+                mint: ctx.accounts.chip_mint.to_account_info(),
                 to: ctx.accounts.player_chip_account.to_account_info(),
                 authority: ctx.accounts.admin_authority.to_account_info(),
             },
             signer_seeds,
         );
-        transfer_checked(cpi_ctx, winning, ctx.accounts.supply_chip_mint.decimals)
+        transfer_checked(cpi_ctx, winning, ctx.accounts.chip_mint.decimals)
     } else {
         Ok(())
     }

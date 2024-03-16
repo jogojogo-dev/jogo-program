@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import BN from "bn.js";
@@ -15,8 +15,8 @@ async function main() {
 
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
-    const privateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
-    const playerKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
+    const userPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
+    const playerKeypair = anchor.web3.Keypair.fromSecretKey(userPrivateKey);
     // global accounts
     const vault = new anchor.web3.PublicKey(Deployment.vault);
     // game accounts
@@ -31,10 +31,10 @@ async function main() {
         program.programId,
     );
     // token accounts
-    const supplyTokenAccount = new anchor.web3.PublicKey(Deployment.supplyTokenAccount);
-    const supplyTokenMint = new anchor.web3.PublicKey(Deployment.supplyToken);
-    const playerTokenAccount = await getAssociatedTokenAddress(
-        supplyTokenMint,
+    const supplyChipAccount = new anchor.web3.PublicKey(Deployment.supplyChipAccount);
+    const chipMint = new anchor.web3.PublicKey(Deployment.chipMint);
+    const playerChipAccount = await getAssociatedTokenAddress(
+        chipMint,
         playerKeypair.publicKey,
         false,
     );
@@ -52,9 +52,9 @@ async function main() {
             game: game,
             lock: lock,
             bet: bet,
-            supplyTokenAccount: supplyTokenAccount,
-            playerTokenAccount: playerTokenAccount,
-            tokenProgram: TOKEN_PROGRAM_ID,
+            supplyChipAccount,
+            playerChipAccount,
+            tokenProgram: TOKEN_2022_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([playerKeypair])

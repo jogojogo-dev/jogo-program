@@ -15,18 +15,18 @@ pub struct InitVault<'info> {
     #[account(init, payer = owner, space = 8 + Vault::SIZE)]
     pub vault: Box<Account<'info, Vault>>,
     // token accounts
-    pub supply_chip_mint: InterfaceAccount<'info, Mint>,
+    pub chip_mint: InterfaceAccount<'info, Mint>,
     #[account(
         init,
         payer = owner,
-        token::mint = supply_chip_mint,
+        token::mint = chip_mint,
         token::authority = admin_authority,
     )]
     pub supply_chip_account: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         init,
         payer = owner,
-        mint::decimals = supply_chip_mint.decimals,
+        mint::decimals = chip_mint.decimals,
         mint::authority = admin_authority,
     )]
     pub lp_token_mint: Box<InterfaceAccount<'info, Mint>>,
@@ -63,7 +63,7 @@ pub struct Deposit<'info> {
     #[account(mut, has_one = admin, has_one = lp_token_mint, has_one = supply_chip_account)]
     pub vault: Account<'info, Vault>,
     // token accounts
-    pub supply_chip_mint: InterfaceAccount<'info, Mint>,
+    pub chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
     pub lp_token_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
@@ -88,12 +88,12 @@ pub(crate) fn _deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
         ctx.accounts.token_program.to_account_info(),
         TransferChecked {
             from: ctx.accounts.user_chip_account.to_account_info(),
-            mint: ctx.accounts.supply_chip_mint.to_account_info(),
+            mint: ctx.accounts.chip_mint.to_account_info(),
             to: ctx.accounts.supply_chip_account.to_account_info(),
             authority: ctx.accounts.user.to_account_info(),
         },
     );
-    transfer_checked(cpi_ctx, amount, ctx.accounts.supply_chip_mint.decimals)?;
+    transfer_checked(cpi_ctx, amount, ctx.accounts.chip_mint.decimals)?;
 
     let minted_lp = ctx.accounts.vault.deposit(amount)?;
     let signer_seeds = &[
@@ -126,7 +126,7 @@ pub struct Withdraw<'info> {
     #[account(mut, has_one = admin, has_one = lp_token_mint, has_one = supply_chip_account)]
     pub vault: Account<'info, Vault>,
     // token accounts
-    pub supply_chip_mint: InterfaceAccount<'info, Mint>,
+    pub chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
     pub lp_token_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
@@ -163,11 +163,11 @@ pub(crate) fn _withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         ctx.accounts.token_program.to_account_info(),
         TransferChecked {
             from: ctx.accounts.supply_chip_account.to_account_info(),
-            mint: ctx.accounts.supply_chip_mint.to_account_info(),
+            mint: ctx.accounts.chip_mint.to_account_info(),
             to: ctx.accounts.user_chip_account.to_account_info(),
             authority: ctx.accounts.admin_authority.to_account_info(),
         },
         signer_seeds,
     );
-    transfer_checked(cpi_ctx, withdrawal, ctx.accounts.supply_chip_mint.decimals)
+    transfer_checked(cpi_ctx, withdrawal, ctx.accounts.chip_mint.decimals)
 }

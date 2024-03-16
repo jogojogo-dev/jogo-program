@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
@@ -41,10 +41,10 @@ async function main() {
         program.programId,
     );
     // token accounts
-    const supplyTokenAccount = new anchor.web3.PublicKey(Deployment.supplyTokenAccount);
-    const supplyTokenMint = new anchor.web3.PublicKey(Deployment.supplyToken);
-    const playerTokenAccount = await getAssociatedTokenAddress(
-        supplyTokenMint,
+    const supplyChipAccount = new anchor.web3.PublicKey(Deployment.supplyChipAccount);
+    const chipMint = new anchor.web3.PublicKey(Deployment.chipMint);
+    const playerChipAccount = await getAssociatedTokenAddress(
+        chipMint,
         playerKeypair.publicKey,
         false,
     );
@@ -72,14 +72,15 @@ async function main() {
         .accounts({
             player: playerKeypair.publicKey,
             admin: admin,
-            adminAuthority: adminAuthority,
-            vault: vault,
-            game: game,
-            lock: lock,
-            bet: bet,
-            supplyTokenAccount: supplyTokenAccount,
-            playerTokenAccount: playerTokenAccount,
-            tokenProgram: TOKEN_PROGRAM_ID,
+            adminAuthority,
+            vault,
+            game,
+            lock,
+            bet,
+            chipMint,
+            supplyChipAccount,
+            playerChipAccount,
+            tokenProgram: TOKEN_2022_PROGRAM_ID,
             instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
         })
         .signers([playerKeypair])

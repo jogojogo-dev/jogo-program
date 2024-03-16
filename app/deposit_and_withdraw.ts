@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
@@ -27,10 +27,10 @@ async function main() {
     const vault = new anchor.web3.PublicKey(Deployment.vault);
     // token accounts
     const lpTokenMint = new anchor.web3.PublicKey(Deployment.lpTokenMint);
-    const supplyTokenMint = new anchor.web3.PublicKey(Deployment.supplyToken);
-    const supplyTokenAccount = new anchor.web3.PublicKey(Deployment.supplyTokenAccount);
-    const userTokenAccount = await getAssociatedTokenAddress(
-        supplyTokenMint,
+    const chipMint = new anchor.web3.PublicKey(Deployment.chipMint);
+    const supplyChipAccount = new anchor.web3.PublicKey(Deployment.supplyChipAccount);
+    const userChipAccount = await getAssociatedTokenAddress(
+        chipMint,
         userKeypair.publicKey,
         false,
     );
@@ -47,15 +47,16 @@ async function main() {
         .deposit(amount)
         .accounts({
             user: userKeypair.publicKey,
-            admin: admin,
-            adminAuthority: adminAuthority,
-            vault: vault,
-            lpTokenMint: lpTokenMint,
-            supplyTokenAccount: supplyTokenAccount,
-            userTokenAccount: userTokenAccount,
-            userLpTokenAccount: userLpTokenAccount,
+            admin,
+            adminAuthority,
+            vault,
+            chipMint,
+            lpTokenMint,
+            supplyChipAccount,
+            userChipAccount,
+            userLpTokenAccount,
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-            tokenProgram: TOKEN_PROGRAM_ID,
+            tokenProgram: TOKEN_2022_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([userKeypair])
@@ -73,14 +74,14 @@ async function main() {
         .withdraw(lpAmount)
         .accounts({
             user: userKeypair.publicKey,
-            admin: admin,
-            adminAuthority: adminAuthority,
-            vault: vault,
-            lpTokenMint: lpTokenMint,
-            supplyTokenAccount: supplyTokenAccount,
-            userTokenAccount: userTokenAccount,
-            userLpTokenAccount: userLpTokenAccount,
-            tokenProgram: TOKEN_PROGRAM_ID,
+            admin,
+            adminAuthority,
+            vault,
+            lpTokenMint,
+            supplyChipAccount,
+            userChipAccount,
+            userLpTokenAccount,
+            tokenProgram: TOKEN_2022_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([userKeypair])

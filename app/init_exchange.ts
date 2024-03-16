@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
@@ -17,6 +17,8 @@ async function main() {
 
     const ownerPrivateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
+    const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
+    const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const [adminAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
         [
@@ -25,35 +27,36 @@ async function main() {
         ],
         program.programId,
     );
-    const vaultKeypair = anchor.web3.Keypair.generate();
-    const chipMint = new anchor.web3.PublicKey(Deployment.chipMint);
-    const supplyChipAccountKeypair = anchor.web3.Keypair.generate();
-    const lpTokenMintKeypair = anchor.web3.Keypair.generate();
+    const exchangeKeypair = anchor.web3.Keypair.generate();
+    const currencyMint = new anchor.web3.PublicKey(Deployment.currencyMint);
+    const currencyAccountKeypair = anchor.web3.Keypair.generate();
+    const chipMintKeypair = anchor.web3.Keypair.generate();
 
     const txId = await program
         .methods
-        .initVault()
+        .initExchange(operatorKeypair.publicKey)
         .accounts({
             owner: ownerKeypair.publicKey,
-            admin: admin,
-            adminAuthority: adminAuthority,
-            vault: vaultKeypair.publicKey,
-            chipMint,
-            supplyChipAccount: supplyChipAccountKeypair.publicKey,
-            lpTokenMint: lpTokenMintKeypair.publicKey,
-            tokenProgram: TOKEN_2022_PROGRAM_ID,
+            admin,
+            adminAuthority,
+            exchange: exchangeKeypair.publicKey,
+            currencyMint,
+            exchangeCurrencyAccount: currencyAccountKeypair.publicKey,
+            chipMint: chipMintKeypair.publicKey,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            token2022Program: TOKEN_2022_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([ownerKeypair, vaultKeypair, supplyChipAccountKeypair, lpTokenMintKeypair])
+        .signers([ownerKeypair, exchangeKeypair, currencyAccountKeypair, chipMintKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "confirmed",
             maxRetries: 5,
         });
     console.log("transaction id:", txId);
-    console.log("vault:", vaultKeypair.publicKey.toString());
-    console.log("supply chip account:", supplyChipAccountKeypair.publicKey.toString());
-    console.log("lp token mint:", lpTokenMintKeypair.publicKey.toString());
+    console.log("exchange:", exchangeKeypair.publicKey.toString());
+    console.log("currency account:", currencyAccountKeypair.publicKey.toString());
+    console.log("chip mint:", chipMintKeypair.publicKey.toString());
 }
 
 main().catch((err) => {
