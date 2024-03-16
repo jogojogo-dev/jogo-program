@@ -18,7 +18,7 @@ wallet = ".keypairs/deployer.json"
 
 [scripts]
 create_crash_bet = "yarn ts-node app/create_crash_bet.ts"
-deposit = "yarn ts-node app/deposit.ts"
+deposit_and_withdraw = "yarn ts-node app/deposit_and_withdraw.ts"
 init_admin = "yarn ts-node app/init_admin.ts"
 init_crash_game = "yarn ts-node app/init_crash_game.ts"
 init_vault = "yarn ts-node app/init_vault.ts"

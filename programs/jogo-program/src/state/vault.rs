@@ -6,7 +6,7 @@ use crate::error::JogoError;
 pub struct Vault {
     pub admin: Pubkey,
     pub lp_token_mint: Pubkey,
-    pub supply_token_account: Pubkey,
+    pub supply_chip_account: Pubkey,
 
     pub liquidity: u64,
     pub stake: u64,

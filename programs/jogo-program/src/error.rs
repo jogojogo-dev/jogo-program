@@ -21,7 +21,7 @@ pub enum JogoError {
     InvalidWithdrawAmount,
     #[msg("Insufficient liquidity")]
     InsufficientLiquidity,
-
+    
     /// Crash Game Errors
     #[msg("Randomness not fulfilled")]
     RandomnessNotFulfilled,

@@ -21,10 +21,7 @@ async function main() {
     // global accounts
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const [adminAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-            Buffer.from("authority"),
-            admin.toBuffer(),
-        ],
+        [Buffer.from("authority"), admin.toBuffer()],
         program.programId,
     );
     const vault = new anchor.web3.PublicKey(Deployment.vault);
@@ -64,10 +61,35 @@ async function main() {
         .signers([userKeypair])
         .rpc({
             skipPreflight: true,
-            commitment: "confirmed",
+            commitment: "finalized",
             maxRetries: 5,
         });
-    console.log("transaction id:", txId);
+    console.log("deposit transaction id:", txId);
+
+    // withdraw 100 LP
+    const lpAmount = new BN(100);
+    const withdrawTxId = await program
+        .methods
+        .withdraw(lpAmount)
+        .accounts({
+            user: userKeypair.publicKey,
+            admin: admin,
+            adminAuthority: adminAuthority,
+            vault: vault,
+            lpTokenMint: lpTokenMint,
+            supplyTokenAccount: supplyTokenAccount,
+            userTokenAccount: userTokenAccount,
+            userLpTokenAccount: userLpTokenAccount,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([userKeypair])
+        .rpc({
+            skipPreflight: true,
+            commitment: "finalized",
+            maxRetries: 5,
+        });
+    console.log("withdraw transaction id:", withdrawTxId);
 }
 
 main().catch((err) => {

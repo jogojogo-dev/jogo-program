@@ -1,11 +1,12 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Token, TokenAccount, Transfer, transfer};
+use anchor_spl::token_interface::*;
 use orao_solana_vrf::{state::Randomness, RANDOMNESS_ACCOUNT_SEED};
-use solana_program::sysvar::{instructions::load_instruction_at_checked, SysvarId};
-use solana_program::sysvar::instructions::load_current_index_checked;
+use solana_program::sysvar::{SysvarId, instructions::*};
 
-use crate::math::{Fraction, deserialize_ed25519_instruction};
-use crate::state::{Admin, Vault, CrashGame, CrashLock, CrashBet};
+use crate::{
+    math::{Fraction, deserialize_ed25519_instruction},
+    state::{Admin, Vault, CrashGame, CrashLock, CrashBet},
+};
 
 #[derive(Accounts)]
 #[instruction(operator: Pubkey, win_rate: Fraction, max_odd: Fraction)]
@@ -79,7 +80,7 @@ pub struct CreateCrashBet<'info> {
     #[account(mut)]
     pub player: Signer<'info>,
     // jogo accounts
-    #[account(mut, has_one = supply_token_account)]
+    #[account(mut, has_one = supply_chip_account)]
     pub vault: Account<'info, Vault>,
     #[account(mut, has_one = vault)]
     pub game: Account<'info, CrashGame>,
@@ -94,11 +95,12 @@ pub struct CreateCrashBet<'info> {
     )]
     pub bet: Account<'info, CrashBet>,
     // token accounts
+    pub supply_chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
-    pub supply_token_account: Account<'info, TokenAccount>,
+    pub supply_chip_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
-    pub player_token_account: Account<'info, TokenAccount>,
-    pub token_program: Program<'info, Token>,
+    pub player_chip_account: InterfaceAccount<'info, TokenAccount>,
+    pub token_program: Program<'info, Token2022>,
     // system program
     pub system_program: Program<'info, System>,
 }
@@ -110,13 +112,14 @@ pub(crate) fn _create_crash_bet(
 ) -> Result<()> {
     let cpi_ctx = CpiContext::new(
         ctx.accounts.token_program.to_account_info(),
-        Transfer {
-            from: ctx.accounts.player_token_account.to_account_info(),
-            to: ctx.accounts.supply_token_account.to_account_info(),
+        TransferChecked {
+            from: ctx.accounts.player_chip_account.to_account_info(),
+            mint: ctx.accounts.supply_chip_mint.to_account_info(),
+            to: ctx.accounts.supply_chip_account.to_account_info(),
             authority: ctx.accounts.player.to_account_info(),
         },
     );
-    transfer(cpi_ctx, stake)?;
+    transfer_checked(cpi_ctx, stake, ctx.accounts.supply_chip_mint.decimals)?;
 
     let bet = ctx.accounts.game.bet(ctx.bumps.bet, stake, point)?;
     ctx.accounts.vault.bet(bet.stake, bet.reserve)?;
@@ -132,7 +135,7 @@ pub struct SettleCrashGame<'info> {
     pub admin: Account<'info, Admin>,
     #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: SystemAccount<'info>,
-    #[account(mut, has_one = admin, has_one = supply_token_account)]
+    #[account(mut, has_one = admin, has_one = supply_chip_account)]
     pub vault: Account<'info, Vault>,
     #[account(has_one = vault)]
     pub game: Account<'info, CrashGame>,
@@ -146,11 +149,12 @@ pub struct SettleCrashGame<'info> {
     )]
     pub bet: Account<'info, CrashBet>,
     // token accounts
+    pub supply_chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
-    pub supply_token_account: Account<'info, TokenAccount>,
+    pub supply_chip_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
-    pub player_token_account: Account<'info, TokenAccount>,
-    pub token_program: Program<'info, Token>,
+    pub player_chip_account: InterfaceAccount<'info, TokenAccount>,
+    pub token_program: Program<'info, Token2022>,
     // system program
     /// CHECK: this is a instructions sysvar account
     #[account(address = Instructions::id())]
@@ -192,14 +196,15 @@ pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
         ];
         let cpi_ctx = CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
-            Transfer {
-                from: ctx.accounts.supply_token_account.to_account_info(),
-                to: ctx.accounts.player_token_account.to_account_info(),
+            TransferChecked {
+                from: ctx.accounts.supply_chip_account.to_account_info(),
+                mint: ctx.accounts.supply_chip_mint.to_account_info(),
+                to: ctx.accounts.player_chip_account.to_account_info(),
                 authority: ctx.accounts.admin_authority.to_account_info(),
             },
             signer_seeds,
         );
-        transfer(cpi_ctx, winning)
+        transfer_checked(cpi_ctx, winning, ctx.accounts.supply_chip_mint.decimals)
     } else {
         Ok(())
     }

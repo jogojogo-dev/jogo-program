@@ -29,7 +29,23 @@ pub mod jogo_program {
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         _withdraw(ctx, amount)
     }
+
+    pub fn init_exchange(ctx: Context<InitExchange>, operator: Pubkey) -> Result<()> {
+        _init_exchange(ctx, operator)
+    }
     
+    pub fn swap_in(ctx: Context<SwapIn>, amount: u64) -> Result<()> {
+        _swap_in(ctx, amount)
+    }
+    
+    pub fn swap_out(ctx: Context<SwapOut>, amount: u64) -> Result<()> {
+        _swap_out(ctx, amount)
+    }
+    
+    pub fn mint_chip(ctx: Context<MintChip>, amount: u64) -> Result<()> {
+        _mint_chip(ctx, amount)
+    }
+
     pub fn init_crash_game(
         ctx: Context<InitCrashGame>,
         operator: Pubkey,
