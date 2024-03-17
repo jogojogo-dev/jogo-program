@@ -37,11 +37,13 @@ async function main() {
         chipMint,
         userKeypair.publicKey,
         false,
+        TOKEN_2022_PROGRAM_ID,
     );
     const userLpTokenAccount = await getAssociatedTokenAddress(
         lpTokenMint,
         userKeypair.publicKey,
         false,
+        TOKEN_2022_PROGRAM_ID,
     );
 
     let instruction1 = createAssociatedTokenAccountIdempotentInstruction(
@@ -56,7 +58,7 @@ async function main() {
     const amount = new BN(100_000_000);
     const txId = await program
         .methods
-        .withdraw(amount)
+        .depositOrWithdraw(false, amount)
         .preInstructions([instruction1])
         .accounts({
             user: userKeypair.publicKey,

@@ -51,8 +51,8 @@ pub(crate) fn _init_exchange(ctx: Context<InitExchange>, operator: Pubkey) -> Re
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u64)]
-pub struct SwapIn<'info> {
+#[instruction(is_in: bool, amount: u64)]
+pub struct Swap<'info> {
     pub user: Signer<'info>,
     // jogo accounts
     pub admin: Account<'info, Admin>,
@@ -73,87 +73,64 @@ pub struct SwapIn<'info> {
     pub token_2022_program: Program<'info, token_interface::Token2022>,
 }
 
-pub(crate) fn _swap_in(ctx: Context<SwapIn>, amount: u64) -> Result<()> {
-    let cpi_ctx = CpiContext::new(
-        ctx.accounts.token_program.to_account_info(),
-        token::Transfer {
-            from: ctx.accounts.user_currency_account.to_account_info(),
-            to: ctx.accounts.exchange_currency_account.to_account_info(),
-            authority: ctx.accounts.user.to_account_info(),
-        },
-    );
-    token::transfer(cpi_ctx, amount)?;
+pub(crate) fn _swap(ctx: Context<Swap>, is_in: bool, amount: u64) -> Result<()> {
+    if is_in {
+        let cpi_ctx = CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            token::Transfer {
+                from: ctx.accounts.user_currency_account.to_account_info(),
+                to: ctx.accounts.exchange_currency_account.to_account_info(),
+                authority: ctx.accounts.user.to_account_info(),
+            },
+        );
+        token::transfer(cpi_ctx, amount)?;
 
-    let signer_seeds = &[
-        &[
-            b"authority".as_slice(),
-            ctx.accounts.exchange.admin.as_ref(),
-            &ctx.accounts.admin.auth_bump,
-        ][..],
-    ];
-    let cpi_ctx = CpiContext::new_with_signer(
-        ctx.accounts.token_2022_program.to_account_info(),
-        token_interface::MintTo {
-            mint: ctx.accounts.chip_mint.to_account_info(),
-            to: ctx.accounts.user_chip_account.to_account_info(),
-            authority: ctx.accounts.admin_authority.to_account_info(),
-        },
-        signer_seeds,
-    );
-    token_interface::mint_to(cpi_ctx, amount)
-}
+        let signer_seeds = &[
+            &[
+                b"authority".as_slice(),
+                ctx.accounts.exchange.admin.as_ref(),
+                &ctx.accounts.admin.auth_bump,
+            ][..],
+        ];
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.token_2022_program.to_account_info(),
+            token_interface::MintTo {
+                mint: ctx.accounts.chip_mint.to_account_info(),
+                to: ctx.accounts.user_chip_account.to_account_info(),
+                authority: ctx.accounts.admin_authority.to_account_info(),
+            },
+            signer_seeds,
+        );
+        token_interface::mint_to(cpi_ctx, amount)   
+    } else {
+        let cpi_ctx = CpiContext::new(
+            ctx.accounts.token_2022_program.to_account_info(),
+            token_interface::Burn {
+                mint: ctx.accounts.chip_mint.to_account_info(),
+                from: ctx.accounts.user_chip_account.to_account_info(),
+                authority: ctx.accounts.user.to_account_info(),
+            },
+        );
+        token_interface::burn(cpi_ctx, amount)?;
 
-#[derive(Accounts)]
-#[instruction(amount: u64)]
-pub struct SwapOut<'info> {
-    pub user: Signer<'info>,
-    // jogo accounts
-    pub admin: Account<'info, Admin>,
-    #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
-    pub admin_authority: SystemAccount<'info>,
-    #[account(has_one = admin, has_one = exchange_currency_account, has_one = chip_mint)]
-    pub exchange: Account<'info, Exchange>,
-    // token accounts
-    #[account(mut)]
-    pub chip_mint: InterfaceAccount<'info, token_interface::Mint>,
-    #[account(mut)]
-    pub exchange_currency_account: Account<'info, token::TokenAccount>,
-    #[account(mut)]
-    pub user_currency_account: Account<'info, token::TokenAccount>,
-    #[account(mut)]
-    pub user_chip_account: InterfaceAccount<'info, token_interface::TokenAccount>,
-    pub token_program: Program<'info, token::Token>,
-    pub token_2022_program: Program<'info, token_interface::Token2022>,
-}
-
-pub(crate) fn _swap_out(ctx: Context<SwapOut>, amount: u64) -> Result<()> {
-    let cpi_ctx = CpiContext::new(
-        ctx.accounts.token_2022_program.to_account_info(),
-        token_interface::Burn {
-            mint: ctx.accounts.chip_mint.to_account_info(),
-            from: ctx.accounts.user_chip_account.to_account_info(),
-            authority: ctx.accounts.user.to_account_info(),
-        },
-    );
-    token_interface::burn(cpi_ctx, amount)?;
-
-    let signer_seeds = &[
-        &[
-            b"authority".as_slice(),
-            ctx.accounts.exchange.admin.as_ref(),
-            &ctx.accounts.admin.auth_bump,
-        ][..],
-    ];
-    let cpi_ctx = CpiContext::new_with_signer(
-        ctx.accounts.token_program.to_account_info(),
-        token::Transfer {
-            from: ctx.accounts.exchange_currency_account.to_account_info(),
-            to: ctx.accounts.user_currency_account.to_account_info(),
-            authority: ctx.accounts.admin_authority.to_account_info(),
-        },
-        signer_seeds,
-    );
-    token::transfer(cpi_ctx, amount)
+        let signer_seeds = &[
+            &[
+                b"authority".as_slice(),
+                ctx.accounts.exchange.admin.as_ref(),
+                &ctx.accounts.admin.auth_bump,
+            ][..],
+        ];
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            token::Transfer {
+                from: ctx.accounts.exchange_currency_account.to_account_info(),
+                to: ctx.accounts.user_currency_account.to_account_info(),
+                authority: ctx.accounts.admin_authority.to_account_info(),
+            },
+            signer_seeds,
+        );
+        token::transfer(cpi_ctx, amount)
+    }
 }
 
 #[derive(Accounts)]

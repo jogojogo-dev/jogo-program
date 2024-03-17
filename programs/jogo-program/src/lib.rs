@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 use math::Fraction;
 use instructions::*;
 
-declare_id!("9Efg64Ztcb2qzN5Pyq6yk3hBSUwCZVzfLdtCcZ7RnzJw");
+declare_id!("D9jrqbFTaYCP1eiBNr1fy8ALDfkF31gAc2eiif51aUUg");
 
 #[program]
 pub mod jogo_program {
@@ -22,26 +22,22 @@ pub mod jogo_program {
         _init_vault(ctx)
     }
     
-    pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
-        _deposit(ctx, amount)
+    pub fn deposit_or_withdraw(
+        ctx: Context<DepositOrWithdraw>,
+        is_deposit: bool,
+        amount: u64,
+    ) -> Result<()> {
+        _deposit_or_withdraw(ctx, is_deposit, amount)
     }
     
-    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
-        _withdraw(ctx, amount)
-    }
-
     pub fn init_exchange(ctx: Context<InitExchange>, operator: Pubkey) -> Result<()> {
         _init_exchange(ctx, operator)
     }
     
-    pub fn swap_in(ctx: Context<SwapIn>, amount: u64) -> Result<()> {
-        _swap_in(ctx, amount)
+    pub fn swap(ctx: Context<Swap>, is_in: bool, amount: u64) -> Result<()> {
+        _swap(ctx, is_in, amount)
     }
-    
-    pub fn swap_out(ctx: Context<SwapOut>, amount: u64) -> Result<()> {
-        _swap_out(ctx, amount)
-    }
-    
+
     pub fn mint_chip(ctx: Context<MintChip>, amount: u64) -> Result<()> {
         _mint_chip(ctx, amount)
     }

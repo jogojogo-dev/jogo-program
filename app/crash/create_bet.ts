@@ -37,6 +37,7 @@ async function main() {
         chipMint,
         playerKeypair.publicKey,
         false,
+        TOKEN_2022_PROGRAM_ID,
     );
 
     // stake 1

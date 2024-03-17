@@ -38,6 +38,7 @@ async function main() {
         currencyMint,
         userKeypair.publicKey,
         false,
+        TOKEN_2022_PROGRAM_ID,
     );
     const userChipAccount = await getAssociatedTokenAddress(
         chipMint,
@@ -57,7 +58,7 @@ async function main() {
     const amount = new BN(1_000_000_000);
     const txId = await program
         .methods
-        .swapIn(amount)
+        .swap(true, amount)
         .preInstructions([instruction1])
         .accounts({
             user: userKeypair.publicKey,

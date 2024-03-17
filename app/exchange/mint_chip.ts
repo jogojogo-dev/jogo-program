@@ -37,6 +37,7 @@ async function main() {
         chipMint,
         userKeypair.publicKey,
         false,
+        TOKEN_2022_PROGRAM_ID,
     );
 
     let instruction1 = createAssociatedTokenAccountIdempotentInstruction(
@@ -44,6 +45,7 @@ async function main() {
         userChipAccount,
         userKeypair.publicKey,
         chipMint,
+        TOKEN_2022_PROGRAM_ID,
     );
 
     // mint 1000

@@ -47,6 +47,7 @@ async function main() {
         chipMint,
         playerKeypair.publicKey,
         false,
+        TOKEN_2022_PROGRAM_ID,
     );
 
     const lockData = await program.account.crashLock.fetch(lock);
