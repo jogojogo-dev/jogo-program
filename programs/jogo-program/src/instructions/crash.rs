@@ -95,7 +95,7 @@ pub struct CreateCrashBet<'info> {
     )]
     pub bet: Account<'info, CrashBet>,
     // token accounts
-    pub supply_chip_mint: InterfaceAccount<'info, Mint>,
+    pub chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
     pub supply_chip_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
@@ -114,15 +114,15 @@ pub(crate) fn _create_crash_bet(
         ctx.accounts.token_program.to_account_info(),
         TransferChecked {
             from: ctx.accounts.player_chip_account.to_account_info(),
-            mint: ctx.accounts.supply_chip_mint.to_account_info(),
+            mint: ctx.accounts.chip_mint.to_account_info(),
             to: ctx.accounts.supply_chip_account.to_account_info(),
             authority: ctx.accounts.player.to_account_info(),
         },
     );
-    transfer_checked(cpi_ctx, stake, ctx.accounts.supply_chip_mint.decimals)?;
+    transfer_checked(cpi_ctx, stake, ctx.accounts.chip_mint.decimals)?;
 
     let bet = ctx.accounts.game.bet(ctx.bumps.bet, stake, point)?;
-    ctx.accounts.vault.bet(bet.stake, bet.reserve)?;
+    ctx.accounts.vault.bet_crash(bet.stake, bet.reserve)?;
     ctx.accounts.bet.set_inner(bet);
 
     Ok(())
@@ -156,9 +156,9 @@ pub struct SettleCrashGame<'info> {
     pub player_chip_account: InterfaceAccount<'info, TokenAccount>,
     pub token_program: Program<'info, Token2022>,
     // system program
-    /// CHECK: this is a instructions sysvar account
+    /// CHECK: this is an instructions sysvar account
     #[account(address = Instructions::id())]
-    pub instructions: AccountInfo<'info>,
+    pub instructions: UncheckedAccount<'info>,
 }
 
 pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
@@ -184,7 +184,7 @@ pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
         None
     };
     let winning = ctx.accounts.bet.settle(point, crash_point);
-    ctx.accounts.vault.settle(ctx.accounts.bet.stake, ctx.accounts.bet.reserve, winning);
+    ctx.accounts.vault.settle_crash(ctx.accounts.bet.stake, ctx.accounts.bet.reserve, winning);
     
     if winning > 0 {
         let signer_seeds = &[

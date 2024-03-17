@@ -54,7 +54,7 @@ impl Vault {
         Ok(withdrawal)
     }
 
-    pub(crate) fn bet(&mut self, stake: u64, reserve: u64) -> Result<()> {
+    pub(crate) fn bet_crash(&mut self, stake: u64, reserve: u64) -> Result<()> {
         self.stake += stake;
         self.liquidity += stake;
         if reserve > self.liquidity {
@@ -66,9 +66,22 @@ impl Vault {
         Ok(())
     }
 
-    pub(crate) fn settle(&mut self, stake: u64, reserve: u64, winning: u64) {
+    pub(crate) fn settle_crash(&mut self, stake: u64, reserve: u64, winning: u64) {
         self.stake -= stake;
         self.liquidity += reserve - winning;
         self.reserve -= reserve;
+    }
+    
+    pub(crate) fn settle_third_party(&mut self, win: bool, amount: u64) -> Result<()> {
+        if win {
+            if amount > self.liquidity {
+                return Err(JogoError::InsufficientLiquidity.into());
+            }
+            self.liquidity -= amount;
+        } else {
+            self.liquidity += amount;
+        }
+        
+        Ok(())
     }
 }

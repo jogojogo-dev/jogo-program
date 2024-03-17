@@ -35,4 +35,10 @@ pub enum JogoError {
     InvalidStakeAmount,
     #[msg("Invalid bet message")]
     InvalidBetMessage,
+    
+    /// ThirdParty Game Errors
+    #[msg("Invalid 3rd-party player message")]
+    InvalidThirdPartyPlayerMessage,
+    #[msg("Invalid 3rd-party player nonce")]
+    InvalidThirdPartyPlayerNonce,
 }

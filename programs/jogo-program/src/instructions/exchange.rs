@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{token, token_interface, associated_token::AssociatedToken};
-use anchor_spl::token::{Burn, burn, mint_to, MintTo, Transfer, transfer};
 
 use crate::state::{Admin, Exchange};
 
@@ -87,13 +86,13 @@ pub struct SwapIn<'info> {
 pub(crate) fn _swap_in(ctx: Context<SwapIn>, amount: u64) -> Result<()> {
     let cpi_ctx = CpiContext::new(
         ctx.accounts.token_program.to_account_info(),
-        Transfer {
+        token::Transfer {
             from: ctx.accounts.user_currency_account.to_account_info(),
             to: ctx.accounts.exchange_currency_account.to_account_info(),
             authority: ctx.accounts.user.to_account_info(),
         },
     );
-    transfer(cpi_ctx, amount)?;
+    token::transfer(cpi_ctx, amount)?;
 
     let signer_seeds = &[
         &[
@@ -104,14 +103,14 @@ pub(crate) fn _swap_in(ctx: Context<SwapIn>, amount: u64) -> Result<()> {
     ];
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_2022_program.to_account_info(),
-        MintTo {
+        token_interface::MintTo {
             mint: ctx.accounts.chip_mint.to_account_info(),
             to: ctx.accounts.user_chip_account.to_account_info(),
             authority: ctx.accounts.admin_authority.to_account_info(),
         },
         signer_seeds,
     );
-    mint_to(cpi_ctx, amount)
+    token_interface::mint_to(cpi_ctx, amount)
 }
 
 #[derive(Accounts)]
@@ -142,13 +141,13 @@ pub struct SwapOut<'info> {
 pub(crate) fn _swap_out(ctx: Context<SwapOut>, amount: u64) -> Result<()> {
     let cpi_ctx = CpiContext::new(
         ctx.accounts.token_2022_program.to_account_info(),
-        Burn {
+        token_interface::Burn {
             mint: ctx.accounts.chip_mint.to_account_info(),
             from: ctx.accounts.user_chip_account.to_account_info(),
             authority: ctx.accounts.user.to_account_info(),
         },
     );
-    burn(cpi_ctx, amount)?;
+    token_interface::burn(cpi_ctx, amount)?;
 
     let signer_seeds = &[
         &[
@@ -159,14 +158,14 @@ pub(crate) fn _swap_out(ctx: Context<SwapOut>, amount: u64) -> Result<()> {
     ];
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
-        Transfer {
+        token::Transfer {
             from: ctx.accounts.exchange_currency_account.to_account_info(),
             to: ctx.accounts.user_currency_account.to_account_info(),
             authority: ctx.accounts.admin_authority.to_account_info(),
         },
         signer_seeds,
     );
-    transfer(cpi_ctx, amount)
+    token::transfer(cpi_ctx, amount)
 }
 
 #[derive(Accounts)]
@@ -207,12 +206,12 @@ pub(crate) fn _mint_chip(ctx: Context<MintChip>, amount: u64) -> Result<()> {
     ];
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
-        MintTo {
+        token_interface::MintTo {
             mint: ctx.accounts.chip_mint.to_account_info(),
             to: ctx.accounts.user_chip_account.to_account_info(),
             authority: ctx.accounts.admin_authority.to_account_info(),
         },
         signer_seeds,
     );
-    mint_to(cpi_ctx, amount)
+    token_interface::mint_to(cpi_ctx, amount)
 }

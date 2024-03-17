@@ -7,13 +7,13 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-jogo_program = "8PqrU7ZDc66JcrwiexCqEavjeZMYBoR9ySFdXQZQgAUw"
+jogo_program = "FN3jzv7cNEyLqtymV9NqiUQi8DqhYc9DshPQhLBqn3uY"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "https://jogojogo-dev2b46-932d.devnet.rpcpool.com/63e7440c-e69c-4b29-9b03-d7264f361209"
+cluster = "Devnet"
 wallet = ".keypairs/deployer.json"
 
 [scripts]

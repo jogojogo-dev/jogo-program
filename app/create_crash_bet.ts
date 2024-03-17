@@ -48,10 +48,10 @@ async function main() {
         .createCrashBet(stakeAmount, point)
         .accounts({
             player: playerKeypair.publicKey,
-            vault: vault,
-            game: game,
-            lock: lock,
-            bet: bet,
+            vault,
+            game,
+            lock,
+            bet,
             supplyChipAccount,
             playerChipAccount,
             tokenProgram: TOKEN_2022_PROGRAM_ID,

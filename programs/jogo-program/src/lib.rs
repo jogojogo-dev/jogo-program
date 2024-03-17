@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 use math::Fraction;
 use instructions::*;
 
-declare_id!("8PqrU7ZDc66JcrwiexCqEavjeZMYBoR9ySFdXQZQgAUw");
+declare_id!("FN3jzv7cNEyLqtymV9NqiUQi8DqhYc9DshPQhLBqn3uY");
 
 #[program]
 pub mod jogo_program {
@@ -73,5 +73,17 @@ pub mod jogo_program {
     
     pub fn close_crash_lock(ctx: Context<CloseCrashLock>) -> Result<()> {
         _close_crash_lock(ctx)
+    }
+
+    pub fn init_third_party_game(ctx: Context<InitThirtyPartyGame>, operator: Pubkey) -> Result<()> {
+        _init_third_party_game(ctx, operator)
+    }
+
+    pub fn init_third_party_player_state(ctx: Context<InitThirdPartyPlayerState>) -> Result<()> {
+        _init_third_party_player_state(ctx)
+    }
+
+    pub fn settle_third_party_player_state(ctx: Context<SettleThirdPlayerState>) -> Result<()> {
+        _settle_third_party_player_state(ctx)
     }
 }
