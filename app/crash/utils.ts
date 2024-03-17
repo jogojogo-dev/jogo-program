@@ -1,6 +1,5 @@
 import { sha256 } from "@noble/hashes/sha256";
 import BN from "bn.js";
-import {p} from "@noble/curves/pasta";
 
 const POINT_PRECISION = 100;
 
@@ -38,9 +37,9 @@ export class Fraction {
         };
     }
 
-    toFloat() {
-        return this.numerator.toNumber() / this.denominator.toNumber();
-    }
+    // toFloat() {
+    //     return this.numerator.toNumber() / this.denominator.toNumber();
+    // }
 }
 
 export function randomSeed(lock: Uint8Array, lastRandomness: Uint8Array) {

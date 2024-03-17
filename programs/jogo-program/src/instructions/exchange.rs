@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{token, token_interface, associated_token::AssociatedToken};
+use anchor_spl::{token, token_interface};
 
 use crate::state::{Admin, Exchange};
 
@@ -53,7 +53,6 @@ pub(crate) fn _init_exchange(ctx: Context<InitExchange>, operator: Pubkey) -> Re
 #[derive(Accounts)]
 #[instruction(amount: u64)]
 pub struct SwapIn<'info> {
-    #[account(mut)]
     pub user: Signer<'info>,
     // jogo accounts
     pub admin: Account<'info, Admin>,
@@ -68,19 +67,10 @@ pub struct SwapIn<'info> {
     pub exchange_currency_account: Account<'info, token::TokenAccount>,
     #[account(mut)]
     pub user_currency_account: Account<'info, token::TokenAccount>,
-    #[account(
-        init_if_needed,
-        payer = user,
-        associated_token::mint = chip_mint,
-        associated_token::authority = user,
-        associated_token::token_program = token_2022_program,
-    )]
+    #[account(mut)]
     pub user_chip_account: InterfaceAccount<'info, token_interface::TokenAccount>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, token::Token>,
     pub token_2022_program: Program<'info, token_interface::Token2022>,
-    // system program
-    pub system_program: Program<'info, System>,
 }
 
 pub(crate) fn _swap_in(ctx: Context<SwapIn>, amount: u64) -> Result<()> {
@@ -134,8 +124,6 @@ pub struct SwapOut<'info> {
     pub user_chip_account: InterfaceAccount<'info, token_interface::TokenAccount>,
     pub token_program: Program<'info, token::Token>,
     pub token_2022_program: Program<'info, token_interface::Token2022>,
-    // system program
-    pub system_program: Program<'info, System>,
 }
 
 pub(crate) fn _swap_out(ctx: Context<SwapOut>, amount: u64) -> Result<()> {
@@ -171,7 +159,6 @@ pub(crate) fn _swap_out(ctx: Context<SwapOut>, amount: u64) -> Result<()> {
 #[derive(Accounts)]
 #[instruction(amount: u64)]
 pub struct MintChip<'info> {
-    #[account(mut)]
     pub operator: Signer<'info>,
     pub user: SystemAccount<'info>,
     // jogo accounts
@@ -183,17 +170,9 @@ pub struct MintChip<'info> {
     // token accounts
     #[account(mut)]
     pub chip_mint: InterfaceAccount<'info, token_interface::Mint>,
-    #[account(
-        init_if_needed,
-        payer = operator,
-        associated_token::mint = chip_mint,
-        associated_token::authority = user,
-    )]
+    #[account(mut)]
     pub user_chip_account: InterfaceAccount<'info, token_interface::TokenAccount>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, token_interface::Token2022>,
-    // system program
-    pub system_program: Program<'info, System>,
 }
 
 pub(crate) fn _mint_chip(ctx: Context<MintChip>, amount: u64) -> Result<()> {

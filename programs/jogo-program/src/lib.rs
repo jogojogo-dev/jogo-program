@@ -67,8 +67,8 @@ pub mod jogo_program {
         _create_crash_bet(ctx, stake, point)
     }
     
-    pub fn settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
-        _settle_crash_game(ctx)
+    pub fn settle_crash_bet(ctx: Context<SettleCrashBet>) -> Result<()> {
+        _settle_crash_bet(ctx)
     }
     
     pub fn close_crash_lock(ctx: Context<CloseCrashLock>) -> Result<()> {

@@ -70,7 +70,7 @@ pub struct SettleThirdPlayerState<'info> {
     pub admin: Account<'info, Admin>,
     #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: SystemAccount<'info>,
-    #[account(mut, has_one = admin, has_one = supply_chip_account)]
+    #[account(mut, has_one = admin, has_one = vault_chip_account)]
     pub vault: Account<'info, Vault>,
     #[account(mut, has_one = vault)]
     pub game: Account<'info, ThirdPartyGame>,
@@ -83,11 +83,11 @@ pub struct SettleThirdPlayerState<'info> {
     // token accounts
     pub chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
-    pub supply_chip_account: InterfaceAccount<'info, TokenAccount>,
+    pub vault_chip_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
     pub player_chip_account: InterfaceAccount<'info, TokenAccount>,
     pub token_program: Program<'info, Token2022>,
-    //
+    // system accounts
     /// CHECK: this is an instructions sysvar account
     #[account(address = Instructions::id())]
     pub instructions: UncheckedAccount<'info>,
@@ -121,7 +121,7 @@ pub(crate) fn _settle_third_party_player_state(ctx: Context<SettleThirdPlayerSta
         let cpi_ctx = CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
             TransferChecked {
-                from: ctx.accounts.supply_chip_account.to_account_info(),
+                from: ctx.accounts.vault_chip_account.to_account_info(),
                 mint: ctx.accounts.chip_mint.to_account_info(),
                 to: ctx.accounts.player_chip_account.to_account_info(),
                 authority: ctx.accounts.admin_authority.to_account_info(),
@@ -136,7 +136,7 @@ pub(crate) fn _settle_third_party_player_state(ctx: Context<SettleThirdPlayerSta
             TransferChecked {
                 from: ctx.accounts.player_chip_account.to_account_info(),
                 mint: ctx.accounts.chip_mint.to_account_info(),
-                to: ctx.accounts.supply_chip_account.to_account_info(),
+                to: ctx.accounts.vault_chip_account.to_account_info(),
                 authority: ctx.accounts.player.to_account_info(),
             },
         );

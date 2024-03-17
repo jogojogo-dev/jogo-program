@@ -4,8 +4,8 @@ import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
-import { JogoProgram } from "../target/types/jogo_program";
-import { Deployment } from "./deployment";
+import { JogoProgram } from "../../target/types/jogo_program";
+import { Deployment } from "../deployment";
 
 dotenv.config();
 
@@ -15,7 +15,7 @@ async function main() {
 
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
-    const ownerPrivateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
+    const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
     const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
     const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
@@ -55,7 +55,7 @@ async function main() {
         });
     console.log("transaction id:", txId);
     console.log("exchange:", exchangeKeypair.publicKey.toString());
-    console.log("currency account:", currencyAccountKeypair.publicKey.toString());
+    console.log("exchange currency account:", currencyAccountKeypair.publicKey.toString());
     console.log("chip mint:", chipMintKeypair.publicKey.toString());
 }
 

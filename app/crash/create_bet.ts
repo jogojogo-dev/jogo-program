@@ -4,8 +4,8 @@ import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID } from "@solana/spl-to
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import BN from "bn.js";
-import { JogoProgram } from "../target/types/jogo_program";
-import { Deployment } from "./deployment";
+import { JogoProgram } from "../../target/types/jogo_program";
+import { Deployment } from "../deployment";
 
 dotenv.config();
 
@@ -31,8 +31,8 @@ async function main() {
         program.programId,
     );
     // token accounts
-    const supplyChipAccount = new anchor.web3.PublicKey(Deployment.supplyChipAccount);
     const chipMint = new anchor.web3.PublicKey(Deployment.chipMint);
+    const vaultChipAccount = new anchor.web3.PublicKey(Deployment.vaultChipAccount);
     const playerChipAccount = await getAssociatedTokenAddress(
         chipMint,
         playerKeypair.publicKey,
@@ -52,7 +52,8 @@ async function main() {
             game,
             lock,
             bet,
-            supplyChipAccount,
+            chipMint,
+            vaultChipAccount,
             playerChipAccount,
             tokenProgram: TOKEN_2022_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,

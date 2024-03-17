@@ -4,8 +4,8 @@ import { Orao } from "@orao-network/solana-vrf"
 import { ed25519 } from "@noble/curves/ed25519";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
-import { JogoProgram } from "../target/types/jogo_program";
-import { Deployment } from "./deployment";
+import { JogoProgram } from "../../target/types/jogo_program";
+import { Deployment } from "../deployment";
 import {randomSeed, computeCrashPoint, pointBNToNumber, Fraction} from "./utils";
 
 dotenv.config();

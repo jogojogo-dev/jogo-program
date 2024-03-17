@@ -80,7 +80,7 @@ pub struct CreateCrashBet<'info> {
     #[account(mut)]
     pub player: Signer<'info>,
     // jogo accounts
-    #[account(mut, has_one = supply_chip_account)]
+    #[account(mut, has_one = vault_chip_account)]
     pub vault: Account<'info, Vault>,
     #[account(mut, has_one = vault)]
     pub game: Account<'info, CrashGame>,
@@ -97,7 +97,7 @@ pub struct CreateCrashBet<'info> {
     // token accounts
     pub chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
-    pub supply_chip_account: InterfaceAccount<'info, TokenAccount>,
+    pub vault_chip_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
     pub player_chip_account: InterfaceAccount<'info, TokenAccount>,
     pub token_program: Program<'info, Token2022>,
@@ -115,7 +115,7 @@ pub(crate) fn _create_crash_bet(
         TransferChecked {
             from: ctx.accounts.player_chip_account.to_account_info(),
             mint: ctx.accounts.chip_mint.to_account_info(),
-            to: ctx.accounts.supply_chip_account.to_account_info(),
+            to: ctx.accounts.vault_chip_account.to_account_info(),
             authority: ctx.accounts.player.to_account_info(),
         },
     );
@@ -129,13 +129,13 @@ pub(crate) fn _create_crash_bet(
 }
 
 #[derive(Accounts)]
-pub struct SettleCrashGame<'info> {
+pub struct SettleCrashBet<'info> {
     pub player: Signer<'info>,
     // jogo accounts
     pub admin: Account<'info, Admin>,
     #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: SystemAccount<'info>,
-    #[account(mut, has_one = admin, has_one = supply_chip_account)]
+    #[account(mut, has_one = admin, has_one = vault_chip_account)]
     pub vault: Account<'info, Vault>,
     #[account(has_one = vault)]
     pub game: Account<'info, CrashGame>,
@@ -151,7 +151,7 @@ pub struct SettleCrashGame<'info> {
     // token accounts
     pub chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
-    pub supply_chip_account: InterfaceAccount<'info, TokenAccount>,
+    pub vault_chip_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
     pub player_chip_account: InterfaceAccount<'info, TokenAccount>,
     pub token_program: Program<'info, Token2022>,
@@ -161,13 +161,13 @@ pub struct SettleCrashGame<'info> {
     pub instructions: UncheckedAccount<'info>,
 }
 
-pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
+pub(crate) fn _settle_crash_bet(ctx: Context<SettleCrashBet>) -> Result<()> {
     let index = load_current_index_checked(&ctx.accounts.instructions)? as usize;
     let instruction = load_instruction_at_checked(index - 2, &ctx.accounts.instructions)?;
     let instruction_data = deserialize_ed25519_instruction(&instruction)?;
     instruction_data.verify_signer(&ctx.accounts.game.operator)?;
     instruction_data.verify_message(&ctx.accounts.lock.randomness)?;
-    msg!("SettleCrash: Verified Ed25519 instruction 0");
+    msg!("SettleCrashBet: Verified Ed25519 instruction 0");
     let crash_point = ctx.accounts.game.crash_point(instruction_data.sig)?;
     
     let point = if let Ok(instruction) =
@@ -178,7 +178,7 @@ pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
             &ctx.accounts.bet.key(),
             instruction_data.msg,
         )?;
-        msg!("SettleCrash: Verified Ed25519 instruction 1");
+        msg!("SettleCrashBet: Verified Ed25519 instruction 1");
         Some(point)
     } else {
         None
@@ -197,7 +197,7 @@ pub(crate) fn _settle_crash_game(ctx: Context<SettleCrashGame>) -> Result<()> {
         let cpi_ctx = CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
             TransferChecked {
-                from: ctx.accounts.supply_chip_account.to_account_info(),
+                from: ctx.accounts.vault_chip_account.to_account_info(),
                 mint: ctx.accounts.chip_mint.to_account_info(),
                 to: ctx.accounts.player_chip_account.to_account_info(),
                 authority: ctx.accounts.admin_authority.to_account_info(),

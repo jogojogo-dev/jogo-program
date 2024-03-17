@@ -2,8 +2,8 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
-import { JogoProgram } from "../target/types/jogo_program";
-import { Deployment } from "./deployment";
+import { JogoProgram } from "../../target/types/jogo_program";
+import { Deployment } from "../deployment";
 import { Fraction } from "./utils";
 
 dotenv.config();
@@ -14,7 +14,7 @@ async function main() {
 
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
-    const ownerPrivateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
+    const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const vault = new anchor.web3.PublicKey(Deployment.vault);

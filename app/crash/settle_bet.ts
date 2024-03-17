@@ -1,11 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
-import { JogoProgram } from "../target/types/jogo_program";
-import { Deployment } from "./deployment";
+import { JogoProgram } from "../../target/types/jogo_program";
+import { Deployment } from "../deployment";
 import { packBetMessage, pointNumberToBN } from "./utils";
 
 dotenv.config();
@@ -41,8 +41,8 @@ async function main() {
         program.programId,
     );
     // token accounts
-    const supplyChipAccount = new anchor.web3.PublicKey(Deployment.supplyChipAccount);
     const chipMint = new anchor.web3.PublicKey(Deployment.chipMint);
+    const vaultChipAccount = new anchor.web3.PublicKey(Deployment.vaultChipAccount);
     const playerChipAccount = await getAssociatedTokenAddress(
         chipMint,
         playerKeypair.publicKey,
@@ -67,7 +67,7 @@ async function main() {
 
     const txId = await program
         .methods
-        .settleCrashGame()
+        .settleCrashBet()
         .preInstructions([instruction1, instruction2])
         .accounts({
             player: playerKeypair.publicKey,
@@ -78,7 +78,7 @@ async function main() {
             lock,
             bet,
             chipMint,
-            supplyChipAccount,
+            vaultChipAccount,
             playerChipAccount,
             tokenProgram: TOKEN_2022_PROGRAM_ID,
             instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,

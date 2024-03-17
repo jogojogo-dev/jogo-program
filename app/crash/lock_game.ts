@@ -3,8 +3,8 @@ import { Program } from "@coral-xyz/anchor";
 import { randomnessAccountAddress } from "@orao-network/solana-vrf"
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
-import { JogoProgram } from "../target/types/jogo_program";
-import { Deployment } from "./deployment";
+import { JogoProgram } from "../../target/types/jogo_program";
+import { Deployment } from "../deployment";
 import { randomSeed } from "./utils";
 
 dotenv.config();
@@ -15,8 +15,8 @@ async function main() {
 
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
-    const privateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
-    const operatorKeypair = anchor.web3.Keypair.fromSecretKey(privateKey);
+    const operatorPrivateKey = bs58.decode(process.env.CRASH_OPERATOR_PRIVATE_KEY || "");
+    const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
     // game accounts
     const game = new anchor.web3.PublicKey(Deployment.crashGame);
     const gameData = await program.account.crashGame.fetch(game);
@@ -39,9 +39,9 @@ async function main() {
         .lockCrashGame()
         .accounts({
             operator: operatorKeypair.publicKey,
-            game: game,
-            lock: lock,
-            randomness: randomness,
+            game,
+            lock,
+            randomness,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([operatorKeypair])

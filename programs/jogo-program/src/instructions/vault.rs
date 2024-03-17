@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{token_interface::*, associated_token::AssociatedToken};
+use anchor_spl::token_interface::*;
 
 use crate::state::{Admin, Vault};
 
@@ -22,7 +22,7 @@ pub struct InitVault<'info> {
         token::mint = chip_mint,
         token::authority = admin_authority,
     )]
-    pub supply_chip_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub vault_chip_account: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         init,
         payer = owner,
@@ -39,7 +39,7 @@ pub(crate) fn _init_vault(ctx: Context<InitVault>) -> Result<()> {
     let vault = Vault {
         admin: ctx.accounts.admin.key(),
         lp_token_mint: ctx.accounts.lp_token_mint.key(),
-        supply_chip_account: ctx.accounts.supply_chip_account.key(),
+        vault_chip_account: ctx.accounts.vault_chip_account.key(),
         liquidity: 0,
         stake: 0,
         reserve: 0,
@@ -54,33 +54,24 @@ pub(crate) fn _init_vault(ctx: Context<InitVault>) -> Result<()> {
 #[derive(Accounts)]
 #[instruction(amount: u64)]
 pub struct Deposit<'info> {
-    #[account(mut)]
     pub user: Signer<'info>,
     // jogo accounts
     pub admin: Account<'info, Admin>,
     #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: SystemAccount<'info>,
-    #[account(mut, has_one = admin, has_one = lp_token_mint, has_one = supply_chip_account)]
+    #[account(mut, has_one = admin, has_one = lp_token_mint, has_one = vault_chip_account)]
     pub vault: Account<'info, Vault>,
     // token accounts
     pub chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
     pub lp_token_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
-    pub supply_chip_account: InterfaceAccount<'info, TokenAccount>,
+    pub vault_chip_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
     pub user_chip_account: InterfaceAccount<'info, TokenAccount>,
-    #[account(
-        init_if_needed,
-        payer = user,
-        associated_token::mint = lp_token_mint,
-        associated_token::authority = user,
-    )]
+    #[account(mut)]
     pub user_lp_token_account: InterfaceAccount<'info, TokenAccount>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token2022>,
-    // system program
-    pub system_program: Program<'info, System>,
 }
 
 pub(crate) fn _deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
@@ -89,7 +80,7 @@ pub(crate) fn _deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
         TransferChecked {
             from: ctx.accounts.user_chip_account.to_account_info(),
             mint: ctx.accounts.chip_mint.to_account_info(),
-            to: ctx.accounts.supply_chip_account.to_account_info(),
+            to: ctx.accounts.vault_chip_account.to_account_info(),
             authority: ctx.accounts.user.to_account_info(),
         },
     );
@@ -123,21 +114,19 @@ pub struct Withdraw<'info> {
     pub admin: Account<'info, Admin>,
     #[account(seeds = [b"authority", admin.key().as_ref()], bump = admin.auth_bump[0])]
     pub admin_authority: SystemAccount<'info>,
-    #[account(mut, has_one = admin, has_one = lp_token_mint, has_one = supply_chip_account)]
+    #[account(mut, has_one = admin, has_one = lp_token_mint, has_one = vault_chip_account)]
     pub vault: Account<'info, Vault>,
     // token accounts
     pub chip_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
     pub lp_token_mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
-    pub supply_chip_account: InterfaceAccount<'info, TokenAccount>,
+    pub vault_chip_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
     pub user_chip_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
     pub user_lp_token_account: InterfaceAccount<'info, TokenAccount>,
     pub token_program: Program<'info, Token2022>,
-    // system program
-    pub system_program: Program<'info, System>,
 }
 
 pub(crate) fn _withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
@@ -162,7 +151,7 @@ pub(crate) fn _withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         TransferChecked {
-            from: ctx.accounts.supply_chip_account.to_account_info(),
+            from: ctx.accounts.vault_chip_account.to_account_info(),
             mint: ctx.accounts.chip_mint.to_account_info(),
             to: ctx.accounts.user_chip_account.to_account_info(),
             authority: ctx.accounts.admin_authority.to_account_info(),

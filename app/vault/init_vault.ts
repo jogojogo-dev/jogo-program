@@ -4,8 +4,8 @@ import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
-import { JogoProgram } from "../target/types/jogo_program";
-import { Deployment } from "./deployment";
+import { JogoProgram } from "../../target/types/jogo_program";
+import { Deployment } from "../deployment";
 
 dotenv.config();
 
@@ -15,7 +15,7 @@ async function main() {
 
     const program = anchor.workspace.JogoProgram as Program<JogoProgram>;
 
-    const ownerPrivateKey = bs58.decode(process.env.JOGO_OWNER_PRIVATE_KEY || "");
+    const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const [adminAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -27,7 +27,7 @@ async function main() {
     );
     const vaultKeypair = anchor.web3.Keypair.generate();
     const chipMint = new anchor.web3.PublicKey(Deployment.chipMint);
-    const supplyChipAccountKeypair = anchor.web3.Keypair.generate();
+    const vaultChipAccountKeypair = anchor.web3.Keypair.generate();
     const lpTokenMintKeypair = anchor.web3.Keypair.generate();
 
     const txId = await program
@@ -39,12 +39,12 @@ async function main() {
             adminAuthority: adminAuthority,
             vault: vaultKeypair.publicKey,
             chipMint,
-            supplyChipAccount: supplyChipAccountKeypair.publicKey,
+            vaultChipAccount: vaultChipAccountKeypair.publicKey,
             lpTokenMint: lpTokenMintKeypair.publicKey,
             tokenProgram: TOKEN_2022_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([ownerKeypair, vaultKeypair, supplyChipAccountKeypair, lpTokenMintKeypair])
+        .signers([ownerKeypair, vaultKeypair, vaultChipAccountKeypair, lpTokenMintKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "confirmed",
@@ -52,7 +52,7 @@ async function main() {
         });
     console.log("transaction id:", txId);
     console.log("vault:", vaultKeypair.publicKey.toString());
-    console.log("supply chip account:", supplyChipAccountKeypair.publicKey.toString());
+    console.log("vault chip account:", vaultChipAccountKeypair.publicKey.toString());
     console.log("lp token mint:", lpTokenMintKeypair.publicKey.toString());
 }
 
