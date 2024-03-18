@@ -38,12 +38,12 @@ async function main() {
         currencyMint,
         userKeypair.publicKey,
         false,
-        TOKEN_2022_PROGRAM_ID,
     );
     const userChipAccount = await getAssociatedTokenAddress(
         chipMint,
         userKeypair.publicKey,
         false,
+        TOKEN_2022_PROGRAM_ID,
     );
     
     let instruction1 = createAssociatedTokenAccountIdempotentInstruction(
