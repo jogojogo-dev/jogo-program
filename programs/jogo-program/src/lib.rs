@@ -1,4 +1,5 @@
 mod math;
+pub(crate) mod xnft;
 pub mod error;
 pub mod state;
 pub mod instructions;

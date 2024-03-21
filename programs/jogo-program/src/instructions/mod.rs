@@ -3,6 +3,7 @@ mod vault;
 mod crash;
 mod exchange;
 mod third_party;
+mod xnft;
 
 pub use admin::*;
 pub use vault::*;
