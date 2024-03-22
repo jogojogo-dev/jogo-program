@@ -1,10 +1,9 @@
 use anchor_lang::prelude::*;
 
-use crate::xnft::{CreatorsParam, Tag, CreateXnftParams};
+use xnft_helper::xnft::{CreatorsParam, Tag, CreateXnftParams};
 
 #[account]
 pub struct XnftState {
-    pub admin: Pubkey,
     pub operator: Pubkey,
     pub install_vault: Pubkey,
     pub install_price: u64,

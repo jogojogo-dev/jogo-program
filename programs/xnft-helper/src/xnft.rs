@@ -44,12 +44,12 @@ pub struct CreateAppXnft<'info> {
     pub rent: AccountInfo<'info>,
 }
 
-pub(crate) fn create_app_xnft<'info>(
+pub fn create_app_xnft<'info>(
     ctx: CpiContext<'_, '_, '_, 'info, CreateAppXnft<'info>>,
     name: String,
     params: CreateXnftParams,
 ) -> Result<()> {
-    let mut data = Vec::new();
+    let mut data = vec![163, 181, 42, 46, 219, 211, 7, 133];
     name.serialize(&mut data)?;
     params.serialize(&mut data)?;
 
@@ -75,13 +75,41 @@ pub struct CreateInstall<'info> {
     pub system_program: AccountInfo<'info>,
 }
 
-pub(crate) fn create_install<'info>(
-    ctx: CpiContext<'_, '_, '_, 'info, CreateAppXnft<'info>>,
+pub fn create_install<'info>(
+    ctx: CpiContext<'_, '_, '_, 'info, CreateInstall<'info>>,
 ) -> Result<()> {
     let ix = Instruction {
         program_id: Xnft::id(),
         accounts: ctx.to_account_metas(None),
-        data: vec![],
+        data: vec![41, 58, 153, 9, 228, 59, 218, 207],
+    };
+    solana_program::program::invoke_signed(
+        &ix,
+        &ctx.to_account_infos(),
+        ctx.signer_seeds,
+    ).map_err(Into::into)
+}
+
+#[derive(Accounts)]
+pub struct TransferXnft<'info> {
+    pub xnft: AccountInfo<'info>,
+    pub source: AccountInfo<'info>,
+    pub destination: AccountInfo<'info>,
+    pub master_mint: AccountInfo<'info>,
+    pub recipient: AccountInfo<'info>,
+    pub authority: AccountInfo<'info>,
+    pub system_program: AccountInfo<'info>,
+    pub token_program: AccountInfo<'info>,
+    pub associated_token_program: AccountInfo<'info>,
+}
+
+pub fn transfer_xnft<'info>(
+    ctx: CpiContext<'_, '_, '_, 'info, TransferXnft<'info>>,
+) -> Result<()> {
+    let ix = Instruction {
+        program_id: Xnft::id(),
+        accounts: ctx.to_account_metas(None),
+        data: vec![163, 52, 200, 231, 140, 3, 69, 186],
     };
     solana_program::program::invoke_signed(
         &ix,

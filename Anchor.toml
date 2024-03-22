@@ -8,6 +8,7 @@ skip-lint = false
 
 [programs.devnet]
 jogo_program = "D9jrqbFTaYCP1eiBNr1fy8ALDfkF31gAc2eiif51aUUg"
+xnft-helper = "2JmMLmtpKxJSRYmVqbe1zMfhGW5syDksteJtg4Kz9iNp"
 
 [registry]
 url = "https://api.apr.dev"
