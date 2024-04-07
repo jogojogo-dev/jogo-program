@@ -1,6 +1,6 @@
 use anchor_lang::{prelude::*, system_program::{Transfer, transfer}};
 
-declare_id!("9Douj7WFcMwJM4di1Vhth2P41Wpnt99Y88MzECtdK5Bw");
+declare_id!("AW6u5zuAjxVPQP5MotugSdfCh3zx8FDXYsT48ndRUyCS");
 
 #[error_code]
 pub enum CustomError {
@@ -91,7 +91,7 @@ pub struct InitGlobal<'info> {
     #[account(
         init,
         payer = payer,
-        space = Global::SIZE,
+        space = 8 + Global::SIZE,
         seeds = [b"global"],
         bump,
     )]
@@ -109,7 +109,7 @@ pub struct DepositOrWithdraw<'info> {
     #[account(
         init_if_needed,
         payer = user,
-        space = Credential::SIZE,
+        space = 8 + Credential::SIZE,
         seeds = [b"credential", user.key().as_ref()],
         bump,
     )]

@@ -8,7 +8,7 @@ skip-lint = false
 
 [programs.devnet]
 jogo_program = "D9jrqbFTaYCP1eiBNr1fy8ALDfkF31gAc2eiif51aUUg"
-vault_program = "9Douj7WFcMwJM4di1Vhth2P41Wpnt99Y88MzECtdK5Bw"
+vault_program = "AW6u5zuAjxVPQP5MotugSdfCh3zx8FDXYsT48ndRUyCS"
 
 [registry]
 url = "https://api.apr.dev"
@@ -30,10 +30,10 @@ init_crash_game = "yarn ts-node app/crash/init_game.ts"
 init_exchange = "yarn ts-node app/exchange/init_exchange.ts"
 init_third_party_game = "yarn ts-node app/third_party/init_game.ts"
 init_vault = "yarn ts-node app/vault/init_vault.ts"
+sol_vault_close_credentials = "yarn ts-node app/sol_vault/close_credentials.ts"
+sol_vault_deposit_or_withdraw = "yarn ts-node app/sol_vault/deposit_or_withdraw.ts"
+sol_vault_init_global = "yarn ts-node app/sol_vault/init_global.ts"
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 vault_deposit = "yarn ts-node app/vault/deposit.ts"
 vault_info = "yarn ts-node app/vault/info.ts"
 vault_withdraw = "yarn ts-node app/vault/withdraw.ts"
-sol_vault_init_global = "yarn ts-node app/sol_vault/init_global.ts"
-sol_vault_deposit_or_withdraw = "yarn ts-node app/sol_vault/deposit_or_withdraw.ts"
-sol_vault_close_credentials = "yarn ts-node app/sol_vault/close_credentials.ts"
