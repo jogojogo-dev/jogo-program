@@ -13,7 +13,7 @@ async function getTVL(program: Program<VaultProgram>) {
         program.programId,
     );
     const globalData = await program.account.global.fetch(global);
-    console.log("total tvl amount:", globalData.amount);
+    console.log("total tvl amount:", globalData.amount.toNumber());
 }
 
 async function getUserAmount(program: Program<VaultProgram>) {
@@ -23,8 +23,13 @@ async function getUserAmount(program: Program<VaultProgram>) {
         [Buffer.from("credential"), userKeypair.publicKey.toBuffer()],
         program.programId,
     );
-    const credentialData = await program.account.credential.fetch(credential);
-    console.log("user amount:", credentialData.amount);
+
+    try {
+        const credentialData = await program.account.credential.fetch(credential);
+        console.log("user amount:", credentialData.amount.toNumber());
+    } catch (err) {
+        console.log("user has no amount.");
+    }
 }
 
 async function main() {
