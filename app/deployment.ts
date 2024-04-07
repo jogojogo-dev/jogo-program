@@ -8,5 +8,5 @@ export const Deployment = {
     vaultChipAccount: "3yQEjFLkiarepBWrNqpg2GP9LNKJREmjC7JHksaWfdg4",
     lpTokenMint: "nXrvY98wcJkWExMY3UYnZeQJvk72GtGN2kqVUmQnd97",
     crashGame: "9puhUmqfQTohf21nLm6MmgzCoBcShpTNLqHQHvTy9vJ",
-    thirdPartyGame: "",
+    thirdPartyGame: "6bnd5RZ7PbcQAWVwiGh6P4EobxheupCCHH57e96f9D6u",
 };

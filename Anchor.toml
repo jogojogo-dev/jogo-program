@@ -8,6 +8,7 @@ skip-lint = false
 
 [programs.devnet]
 jogo_program = "D9jrqbFTaYCP1eiBNr1fy8ALDfkF31gAc2eiif51aUUg"
+vault_program = "9Douj7WFcMwJM4di1Vhth2P41Wpnt99Y88MzECtdK5Bw"
 
 [registry]
 url = "https://api.apr.dev"
@@ -27,9 +28,9 @@ exchange_swap_out = "yarn ts-node app/exchange/swap_out.ts"
 init_admin = "yarn ts-node app/init_admin.ts"
 init_crash_game = "yarn ts-node app/crash/init_game.ts"
 init_exchange = "yarn ts-node app/exchange/init_exchange.ts"
-init_vault = "yarn ts-node app/vault/init_vault.ts"
 init_third_party_game = "yarn ts-node app/third_party/init_game.ts"
+init_vault = "yarn ts-node app/vault/init_vault.ts"
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 vault_deposit = "yarn ts-node app/vault/deposit.ts"
-vault_withdraw = "yarn ts-node app/vault/withdraw.ts"
 vault_info = "yarn ts-node app/vault/info.ts"
+vault_withdraw = "yarn ts-node app/vault/withdraw.ts"

@@ -29,7 +29,7 @@ impl Vault {
         let supply = self.supply();
         let mint_lp = if supply > 0 {
             (self.minted_lp as u128 * amount as u128 / supply as u128) as u64
-        } else {
+        } else {    
             amount
         };
         self.liquidity += amount;
