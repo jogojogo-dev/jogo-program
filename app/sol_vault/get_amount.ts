@@ -1,7 +1,10 @@
 import { Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { Buffer } from "buffer";
+import * as dotenv from "dotenv";
 import { VaultProgram } from "../../target/types/vault_program";
+
+dotenv.config();
 
 async function getTVL(program: Program<VaultProgram>) {
     const [global] = anchor.web3.PublicKey.findProgramAddressSync(
