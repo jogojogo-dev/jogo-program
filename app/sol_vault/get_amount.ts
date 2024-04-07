@@ -3,6 +3,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Buffer } from "buffer";
 import * as dotenv from "dotenv";
 import { VaultProgram } from "../../target/types/vault_program";
+import * as bs58 from "bs58";
 
 dotenv.config();
 
@@ -16,7 +17,7 @@ async function getTVL(program: Program<VaultProgram>) {
 }
 
 async function getUserAmount(program: Program<VaultProgram>) {
-    const userPrivateKey = Buffer.from(process.env.USER_PRIVATE_KEY || "", "base64");
+    const userPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
     const userKeypair = anchor.web3.Keypair.fromSecretKey(userPrivateKey);
     const [credential] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("credential"), userKeypair.publicKey.toBuffer()],
