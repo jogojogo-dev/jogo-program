@@ -17,7 +17,12 @@ pub struct InitGame<'info> {
         init,
         payer = owner,
         space = 8 + Game::SIZE,
-        seeds = [b"game", admin.key().as_ref(), owner.key().as_ref()],
+        seeds = [
+            b"game",
+            admin.key().as_ref(),
+            owner.key().as_ref(),
+            supply_token_mint.key().as_ref(),
+        ],
         bump,
     )]
     pub game: Account<'info, Game>,
