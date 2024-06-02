@@ -28,18 +28,18 @@ async function main() {
         program.programId,
     )
     const tokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
+    const supplyTokenAccount = await getAssociatedTokenAddress(
+        tokenMint,
+        gameAuthority,
+        true,
+        TOKEN_2022_PROGRAM_ID,
+    );
     const userTokenAccount = await getAssociatedTokenAddress(
         tokenMint,
         userKeypair.publicKey,
         false,
         TOKEN_2022_PROGRAM_ID,
-    )
-    const supplyTokenAccount = await getAssociatedTokenAddress(
-        tokenMint,
-        gameAuthority,
-        false,
-        TOKEN_2022_PROGRAM_ID,
-    )
+    );
 
     const amount = new BN(1_000_000);
     const txId = await program

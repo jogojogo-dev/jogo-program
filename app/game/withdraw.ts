@@ -31,7 +31,7 @@ async function main() {
     const supplyTokenAccount = await getAssociatedTokenAddress(
         tokenMint,
         gameAuthority,
-        false,
+        true,
         TOKEN_PROGRAM_ID,
     );
     const userTokenAccount = await getAssociatedTokenAddress(
