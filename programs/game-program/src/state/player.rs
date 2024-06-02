@@ -20,7 +20,7 @@ impl PlayerState {
 
     #[inline]
     fn check_round(&self) -> Result<()> {
-        require_eq!(self.bet_round, self.settle_round + 1, GameError::InvalidRound);
+        require_gte!(self.settle_round + 1, self.bet_round, GameError::InvalidRound);
         Ok(())
     }
 
