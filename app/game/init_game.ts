@@ -3,7 +3,7 @@ import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {getAssociatedTokenAddress, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import { GameProgram } from "../../target/types/game_program";
 import { Deployment } from "../deployment";
 
@@ -22,12 +22,17 @@ async function main() {
         [Buffer.from("game"), admin.toBuffer(), userKeypair.publicKey.toBuffer()],
         program.programId,
     );
-    const [authority] = anchor.web3.PublicKey.findProgramAddressSync(
+    const [gameAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("authority"), game.toBuffer()],
         program.programId,
     );
-    const supplyTokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
-    const supplyTokenAccountKeypair = anchor.web3.Keypair.generate();
+    const tokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
+    const supplyTokenAccount = await getAssociatedTokenAddress(
+        tokenMint,
+        gameAuthority,
+        true,
+        TOKEN_PROGRAM_ID,
+    );
 
     const txId = await program
         .methods
@@ -36,13 +41,13 @@ async function main() {
             owner: userKeypair.publicKey,
             admin: admin,
             game: game,
-            authority: authority,
-            supplyTokenMint: supplyTokenMint,
-            supplyTokenAccount: supplyTokenAccountKeypair.publicKey,
+            authority: gameAuthority,
+            supplyTokenMint: tokenMint,
+            supplyTokenAccount: supplyTokenAccount,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([userKeypair, supplyTokenAccountKeypair])
+        .signers([userKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "confirmed",

@@ -2,7 +2,6 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
-import { Buffer } from "buffer";
 import { GameProgram } from "../../target/types/game_program";
 
 dotenv.config();
