@@ -3,7 +3,7 @@ import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { GameProgram } from "../../target/types/game_program";
 import { Deployment } from "../deployment";
 
@@ -32,12 +32,7 @@ async function main() {
         [Buffer.from("authority"), game.toBuffer()],
         program.programId,
     );
-    const supplyTokenAccount = await getAssociatedTokenAddress(
-        tokenMint,
-        gameAuthority,
-        true,
-        TOKEN_PROGRAM_ID,
-    );
+    const supplyTokenAccountKeypair = anchor.web3.Keypair.generate();
 
     const txId = await program
         .methods
@@ -48,11 +43,11 @@ async function main() {
             game: game,
             authority: gameAuthority,
             supplyTokenMint: tokenMint,
-            supplyTokenAccount: supplyTokenAccount,
+            supplyTokenAccount: supplyTokenAccountKeypair.publicKey,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([userKeypair])
+        .signers([userKeypair, supplyTokenAccountKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "confirmed",

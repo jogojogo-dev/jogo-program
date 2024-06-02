@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{
     Mint, TokenAccount, TokenInterface,
     transfer_checked, TransferChecked,
@@ -34,11 +33,10 @@ pub struct InitGame<'info> {
     #[account(
         init,
         payer = owner,
-        associated_token::mint = supply_token_mint,
-        associated_token::authority = authority,
+        token::mint = supply_token_mint,
+        token::authority = authority,
     )]
     pub supply_token_account: InterfaceAccount<'info, TokenAccount>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     // system program
     pub system_program: Program<'info, System>,
