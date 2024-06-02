@@ -3,7 +3,7 @@ import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
-import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import {TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import { GameProgram } from "../../target/types/game_program";
 import { Deployment } from "../deployment";
 
@@ -39,7 +39,7 @@ async function main() {
             authority: authority,
             supplyTokenMint: supplyTokenMint,
             supplyTokenAccount: supplyTokenAccountKeypair.publicKey,
-            tokenProgram: TOKEN_2022_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([userKeypair, supplyTokenAccountKeypair])

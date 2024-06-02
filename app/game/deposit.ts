@@ -3,7 +3,7 @@ import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
-import {getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
+import {getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import { GameProgram } from "../../target/types/game_program";
 import { Deployment } from "../deployment";
 import BN from "bn.js";
@@ -51,7 +51,7 @@ async function main() {
             tokenMint: tokenMint,
             ownerTokenAccount: userTokenAccount,
             supplyTokenAccount: supplyTokenAccount,
-            tokenProgram: TOKEN_2022_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
         })
         .signers([userKeypair])
         .rpc({
