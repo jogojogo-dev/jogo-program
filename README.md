@@ -1,10 +1,22 @@
 # Jogo Solana Program
 
-## Deploy
+## Build
 ```shell
 anchor keys sync
 anchor build -p=jogo_program
-anchor deploy -p=jogo_program --program-keypair=target/deploy/jogo_program-keypair.json
+```
+
+### Deploy
+```shell
+solana program deploy \
+    -k=.keypairs/deployer.json \
+    -u=mainnet-beta \
+    --with-compute-unit-price=<0.00005> \
+    --buffer=<YOUR_BUFFER_ACCOUNT> \
+    --use-quic \
+    --commitment=processed \
+    --program-id=target/deploy/vault_program-keypair.json \
+    target/deploy/vault_program.so
 ```
 
 ## Upgrade
