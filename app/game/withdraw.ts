@@ -33,12 +33,7 @@ async function main() {
         [Buffer.from("authority"), game.toBuffer()],
         program.programId,
     );
-    const supplyTokenAccount = await getAssociatedTokenAddress(
-        tokenMint,
-        gameAuthority,
-        true,
-        TOKEN_PROGRAM_ID,
-    );
+    const gameData = await program.account.game.fetch(game);
     const userTokenAccount = await getAssociatedTokenAddress(
         tokenMint,
         userKeypair.publicKey,
@@ -56,7 +51,7 @@ async function main() {
             authority: gameAuthority,
             tokenMint: tokenMint,
             ownerTokenAccount: userTokenAccount,
-            supplyTokenAccount: supplyTokenAccount,
+            supplyTokenAccount: gameData.supplyTokenAccount,
             tokenProgram: TOKEN_PROGRAM_ID,
         })
         .signers([userKeypair])

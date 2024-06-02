@@ -29,22 +29,13 @@ async function main() {
         ],
         program.programId,
     );
-    const [gameAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("authority"), game.toBuffer()],
-        program.programId,
-    );
-    const supplyTokenAccount = await getAssociatedTokenAddress(
-        tokenMint,
-        gameAuthority,
-        true,
-        TOKEN_PROGRAM_ID,
-    );
     const userTokenAccount = await getAssociatedTokenAddress(
         tokenMint,
         userKeypair.publicKey,
         false,
         TOKEN_PROGRAM_ID,
     );
+    const gameData = await program.account.game.fetch(game);
 
     const amount = new BN(100_000_000);
     const txId = await program
@@ -55,7 +46,7 @@ async function main() {
             game: game,
             tokenMint: tokenMint,
             ownerTokenAccount: userTokenAccount,
-            supplyTokenAccount: supplyTokenAccount,
+            supplyTokenAccount: gameData.supplyTokenAccount,
             tokenProgram: TOKEN_PROGRAM_ID,
         })
         .signers([userKeypair])
