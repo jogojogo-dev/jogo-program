@@ -1,4 +1,4 @@
 export const Deployment = {
-    admin: "9Z25UbDUgoV1aRdo4smNDwUTfL9iB6qhzpx16duvDHRu",
+    admin: "Gh7EuEvJb4rASrHhCvMMBhP5bpUaM7j4KQ9MfDSE8kg3",
     tokenMint: "9SmkumXbEcL3KfuLUDQXsRbB73fdBDZbGLG8WkExF3EA",
 }
