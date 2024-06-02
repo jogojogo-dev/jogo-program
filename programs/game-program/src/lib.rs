@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 
 use instructions::*;
 
-declare_id!("9D6mp8PMLU6L1M4r6LcGHeQo67RMov3kT515ieurQqoT");
+declare_id!("C7nbA2iATFvC74iN4gVxdWBA2YT3eVg13ps2PBJXMTwh");
 
 #[program]
 pub mod game_program {
