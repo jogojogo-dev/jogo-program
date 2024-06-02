@@ -16,12 +16,12 @@ pub mod game_program {
         _init_admin(ctx)
     }
     
-    pub fn assign_operator(ctx: Context<AssignOperator>, operator: Pubkey) -> Result<()> {
-        _assign_operator(ctx, operator)
+    pub fn assign_operator(ctx: Context<AssignOperator>) -> Result<()> {
+        _assign_operator(ctx)
     }
     
-    pub fn remove_operator(ctx: Context<RemoveOperator>, operator: Pubkey) -> Result<()> {
-        _remove_operator(ctx, operator)
+    pub fn remove_operator(ctx: Context<RemoveOperator>) -> Result<()> {
+        _remove_operator(ctx)
     }
     
     pub fn init_game(ctx: Context<InitGame>) -> Result<()> {

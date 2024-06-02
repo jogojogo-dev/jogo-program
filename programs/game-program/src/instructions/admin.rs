@@ -24,7 +24,6 @@ pub(crate) fn _init_admin(ctx: Context<InitAdmin>) -> Result<()> {
 }
 
 #[derive(Accounts)]
-#[instruction(operator: Pubkey)]
 pub struct AssignOperator<'info> {
     pub owner: Signer<'info>,
     pub operator: SystemAccount<'info>,
@@ -33,17 +32,13 @@ pub struct AssignOperator<'info> {
     pub admin: Account<'info, Admin>,
 }
 
-pub(crate) fn _assign_operator(
-    ctx: Context<AssignOperator>,
-    operator: Pubkey,
-) -> Result<()> {
-    ctx.accounts.admin.assign_operator(operator);
+pub(crate) fn _assign_operator(ctx: Context<AssignOperator>) -> Result<()> {
+    ctx.accounts.admin.assign_operator(ctx.accounts.operator.key());
 
     Ok(())
 }
 
 #[derive(Accounts)]
-#[instruction(operator: Pubkey)]
 pub struct RemoveOperator<'info> {
     pub owner: Signer<'info>,
     pub operator: SystemAccount<'info>,
@@ -52,11 +47,8 @@ pub struct RemoveOperator<'info> {
     pub admin: Account<'info, Admin>,
 }
 
-pub(crate) fn _remove_operator(
-    ctx: Context<RemoveOperator>,
-    operator: Pubkey,
-) -> Result<()> {
-    ctx.accounts.admin.remove_operator(&operator);
+pub(crate) fn _remove_operator(ctx: Context<RemoveOperator>) -> Result<()> {
+    ctx.accounts.admin.remove_operator(ctx.accounts.operator.key);
 
     Ok(())
 }

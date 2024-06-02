@@ -3,6 +3,9 @@ use anchor_lang::prelude::*;
 #[error_code]
 #[derive(Eq, PartialEq)]
 pub enum GameError {
+    #[msg("Invalid operator")]
+    InvalidOperator,
+    
     #[msg("Invalid deposit amount")]
     InvalidDepositAmount,
     #[msg("Invalid withdraw amount")]

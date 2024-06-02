@@ -5,13 +5,13 @@ use anchor_spl::token_interface::{
 };
 
 use crate::state::{Admin, Game, PlayerState};
+use crate::error::GameError;
 
 #[derive(Accounts)]
 pub struct InitGame<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     // program accounts
-    #[account()]
     pub admin: Account<'info, Admin>,
     #[account(
         init,
@@ -247,7 +247,8 @@ pub struct Settle<'info> {
     #[account(mut)]
     pub operator: Signer<'info>,
     // program accounts
-    #[account(mut, has_one = supply_token_account)]
+    pub admin: Account<'info, Admin>,
+    #[account(mut, has_one = admin, has_one = supply_token_account)]
     pub game: Account<'info, Game>,
     #[account(seeds = [b"authority", game.key().as_ref()], bump = game.auth_bump[0])]
     pub authority: SystemAccount<'info>,
@@ -276,6 +277,11 @@ pub struct SettleEvent {
 }
 
 pub(crate) fn _settle(ctx: Context<Settle>, round: u64, win: bool) -> Result<()> {
+    require!(
+        ctx.accounts.admin.is_operator(ctx.accounts.operator.key),
+        GameError::InvalidOperator,
+    );
+
     let stake = ctx.accounts.player_state.stake;
     let lock = ctx.accounts.player_state.lock;
     let reward = ctx.accounts.player_state.reward;
