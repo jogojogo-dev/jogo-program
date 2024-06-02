@@ -18,15 +18,20 @@ async function main() {
     const userPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
     const userKeypair = anchor.web3.Keypair.fromSecretKey(userPrivateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
+    const tokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
     const [game] = anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("game"), admin.toBuffer(), userKeypair.publicKey.toBuffer()],
+        [
+            Buffer.from("game"),
+            admin.toBuffer(),
+            userKeypair.publicKey.toBuffer(),
+            tokenMint.toBuffer(),
+        ],
         program.programId,
     );
     const [gameAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("authority"), game.toBuffer()],
         program.programId,
     );
-    const tokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
     const supplyTokenAccount = await getAssociatedTokenAddress(
         tokenMint,
         gameAuthority,
