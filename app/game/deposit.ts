@@ -41,7 +41,7 @@ async function main() {
         TOKEN_PROGRAM_ID,
     );
 
-    const amount = new BN(1_000_000);
+    const amount = new BN(100_000_000);
     const txId = await program
         .methods
         .deposit(amount)

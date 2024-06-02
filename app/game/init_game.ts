@@ -3,7 +3,7 @@ import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
-import {TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { GameProgram } from "../../target/types/game_program";
 import { Deployment } from "../deployment";
 
