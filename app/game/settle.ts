@@ -64,7 +64,7 @@ async function main() {
             supplyTokenAccount: supplyTokenAccount,
             tokenProgram: TOKEN_2022_PROGRAM_ID,
         })
-        .signers([userKeypair])
+        .signers([operatorKeypair, userKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "confirmed",
