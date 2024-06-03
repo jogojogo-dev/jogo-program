@@ -19,7 +19,7 @@ wallet = ".keypairs/deployer.json"
 [scripts]
 init_admin = "yarn ts-node app/admin/init_admin.ts"
 assign_operator = "yarn ts-node app/admin/assign_operator.ts"
-init_game = "yarn ts-node app/game/init_club.ts"
+init_club = "yarn ts-node app/game/init_club.ts"
 deposit = "yarn ts-node app/game/deposit.ts"
 withdraw = "yarn ts-node app/game/withdraw.ts"
 bet = "yarn ts-node app/game/bet.ts"
