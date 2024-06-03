@@ -7,7 +7,7 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-game-program = "pabfmzjNNNA4wSsuY7Bv7tnQScVsvZBLyKpEZf3MS5A"
+game-program = "7bAmA2uhe4QDhVGnUzAXwpaDNGX4F4VzMM6Lb3nctYYH"
 
 [registry]
 url = "https://api.apr.dev"
@@ -19,7 +19,7 @@ wallet = ".keypairs/deployer.json"
 [scripts]
 init_admin = "yarn ts-node app/admin/init_admin.ts"
 assign_operator = "yarn ts-node app/admin/assign_operator.ts"
-init_game = "yarn ts-node app/game/init_game.ts"
+init_game = "yarn ts-node app/game/init_club.ts"
 deposit = "yarn ts-node app/game/deposit.ts"
 withdraw = "yarn ts-node app/game/withdraw.ts"
 bet = "yarn ts-node app/game/bet.ts"

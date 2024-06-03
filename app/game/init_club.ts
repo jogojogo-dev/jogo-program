@@ -15,46 +15,48 @@ async function main() {
 
     const program = anchor.workspace.GameProgram as Program<GameProgram>;
 
-    const userPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
-    const userKeypair = anchor.web3.Keypair.fromSecretKey(userPrivateKey);
+    const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
+    const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const tokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
-    const [game] = anchor.web3.PublicKey.findProgramAddressSync(
+    const identifier = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const [club] = anchor.web3.PublicKey.findProgramAddressSync(
         [
-            Buffer.from("game"),
+            Buffer.from("club"),
             admin.toBuffer(),
-            userKeypair.publicKey.toBuffer(),
+            ownerKeypair.publicKey.toBuffer(),
             tokenMint.toBuffer(),
+            Buffer.from(identifier),
         ],
         program.programId,
     );
-    const [gameAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("authority"), game.toBuffer()],
+    const [clubAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("authority"), club.toBuffer()],
         program.programId,
     );
     const supplyTokenAccountKeypair = anchor.web3.Keypair.generate();
 
     const txId = await program
         .methods
-        .initGame()
+        .initClub(identifier)
         .accounts({
-            owner: userKeypair.publicKey,
+            owner: ownerKeypair.publicKey,
             admin: admin,
-            game: game,
-            authority: gameAuthority,
+            club: club,
+            clubAuthority: clubAuthority,
             supplyTokenMint: tokenMint,
             supplyTokenAccount: supplyTokenAccountKeypair.publicKey,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([userKeypair, supplyTokenAccountKeypair])
+        .signers([ownerKeypair, supplyTokenAccountKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "confirmed",
             maxRetries: 5,
         });
     console.log("transaction id:", txId);
-    console.log("game:", game.toString())
+    console.log("club:", club.toString())
 }
 
 main().catch((err) => {

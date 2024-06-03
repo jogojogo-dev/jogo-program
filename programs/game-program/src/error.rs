@@ -5,7 +5,10 @@ use anchor_lang::prelude::*;
 pub enum GameError {
     #[msg("Invalid operator")]
     InvalidOperator,
-    
+
+    #[msg("Invalid direction")]
+    InvalidDirection,
+
     #[msg("Invalid deposit amount")]
     InvalidDepositAmount,
     #[msg("Invalid withdraw amount")]
@@ -17,13 +20,7 @@ pub enum GameError {
     #[msg("Insufficient liquidity")]
     InsufficientLiquidity,
     
-    // Player
-    #[msg("Mismatched bet round")]
-    MismatchedBetRound,
-    #[msg("Mismatched settle round")]
-    MismatchedSettleRound,
-    #[msg("Invalid round")]
-    InvalidRound,
-    #[msg("Invalid reward amount")]
-    InvalidRewardAmount,
+    // Game
+    #[msg("Direction not equals")]
+    DirectionNotEquals,
 }

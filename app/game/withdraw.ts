@@ -16,27 +16,29 @@ async function main() {
 
     const program = anchor.workspace.GameProgram as Program<GameProgram>;
 
-    const userPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
-    const userKeypair = anchor.web3.Keypair.fromSecretKey(userPrivateKey);
+    const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
+    const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const tokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
-    const [game] = anchor.web3.PublicKey.findProgramAddressSync(
+    const identifier = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const [club] = anchor.web3.PublicKey.findProgramAddressSync(
         [
-            Buffer.from("game"),
+            Buffer.from("club"),
             admin.toBuffer(),
-            userKeypair.publicKey.toBuffer(),
+            ownerKeypair.publicKey.toBuffer(),
             tokenMint.toBuffer(),
+            Buffer.from(identifier),
         ],
         program.programId,
     );
-    const [gameAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("authority"), game.toBuffer()],
+    const [clubAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("authority"), club.toBuffer()],
         program.programId,
     );
-    const gameData = await program.account.game.fetch(game);
-    const userTokenAccount = await getAssociatedTokenAddress(
+    const clubData = await program.account.club.fetch(club);
+    const ownerTokenAccount = await getAssociatedTokenAddress(
         tokenMint,
-        userKeypair.publicKey,
+        ownerKeypair.publicKey,
         false,
         TOKEN_PROGRAM_ID,
     );
@@ -46,15 +48,15 @@ async function main() {
         .methods
         .withdraw(amount)
         .accounts({
-            owner: userKeypair.publicKey,
-            game: game,
-            authority: gameAuthority,
+            owner: ownerKeypair.publicKey,
+            club: club,
+            clubAuthority: clubAuthority,
             tokenMint: tokenMint,
-            ownerTokenAccount: userTokenAccount,
-            supplyTokenAccount: gameData.supplyTokenAccount,
+            ownerTokenAccount: ownerTokenAccount,
+            supplyTokenAccount: clubData.supplyTokenAccount,
             tokenProgram: TOKEN_PROGRAM_ID,
         })
-        .signers([userKeypair])
+        .signers([ownerKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "confirmed",
