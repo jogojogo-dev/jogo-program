@@ -270,6 +270,7 @@ pub(crate) fn _bet(
 #[instruction(direction: u8)]
 pub struct Settle<'info> {
     pub player: Signer<'info>,
+    #[account(mut)]
     pub operator: Signer<'info>,
     // program accounts
     pub admin: Account<'info, Admin>,
