@@ -326,7 +326,7 @@ pub(crate) fn _settle(ctx: Context<Settle>, direction: u8) -> Result<()> {
                 from: ctx.accounts.supply_token_account.to_account_info(),
                 mint: ctx.accounts.token_mint.to_account_info(),
                 to: ctx.accounts.player_token_account.to_account_info(),
-                authority: ctx.accounts.club.to_account_info(),
+                authority: ctx.accounts.club_authority.to_account_info(),
             },
             signer_seeds,
         );
