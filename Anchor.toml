@@ -13,7 +13,7 @@ sports-program = "KRXNJkATAMf7B8ZGrNaVpu6FjvQWxfghqce6mquRcQQ"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "https://devnet.helius-rpc.com/?api-key=84bb7591-c544-4b27-9810-0888467759fe"
+cluster = "Devnet"
 wallet = ".keypairs/deployer.json"
 
 [scripts]
