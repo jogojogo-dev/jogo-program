@@ -6,7 +6,7 @@ anchor keys sync
 anchor build -p=jogo_program
 ```
 
-### Deploy
+### Deploy by Solana CLI
 ```shell
 solana program deploy \
     -k=.keypairs/deployer.json \
@@ -17,6 +17,11 @@ solana program deploy \
     --commitment=processed \
     --program-id=target/deploy/vault_program-keypair.json \
     target/deploy/vault_program.so
+```
+
+### Deploy by Anchor
+```shell
+anchor deploy --program-name=<PROGRAM_NAME> --program-keypair=<KEYPAIR>
 ```
 
 ## Upgrade

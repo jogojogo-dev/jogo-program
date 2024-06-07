@@ -2,13 +2,13 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 #[derive(Eq, PartialEq)]
-pub enum GameError {
+pub enum SportsError {
     #[msg("Invalid operator")]
     InvalidOperator,
 
-    #[msg("Invalid direction")]
-    InvalidDirection,
-
+    // Club
+    #[msg("Cannot close club")]
+    CannotCloseClub,
     #[msg("Invalid deposit amount")]
     InvalidDepositAmount,
     #[msg("Invalid withdraw amount")]
@@ -19,8 +19,10 @@ pub enum GameError {
     InvalidLockAmount,
     #[msg("Insufficient liquidity")]
     InsufficientLiquidity,
+    #[msg("Settle is active")]
+    SettleActive,
     
     // Game
-    #[msg("Direction not equals")]
-    DirectionNotEquals,
+    #[msg("Invalid direction")]
+    InvalidDirection,
 }

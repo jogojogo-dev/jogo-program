@@ -7,13 +7,13 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-game-program = "8t4GnEYTd2EHRxwxKVkWkdUV11evmmbWpQoSsLSamqUy"
+sports-program = "KRXNJkATAMf7B8ZGrNaVpu6FjvQWxfghqce6mquRcQQ"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Devnet"
+cluster = "https://devnet.helius-rpc.com/?api-key=84bb7591-c544-4b27-9810-0888467759fe"
 wallet = ".keypairs/deployer.json"
 
 [scripts]

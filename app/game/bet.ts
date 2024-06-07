@@ -3,8 +3,8 @@ import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
-import {getAssociatedTokenAddress, TOKEN_PROGRAM_ID} from "@solana/spl-token";
-import { GameProgram } from "../../target/types/game_program";
+import {ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress, TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import { SportsProgram } from "../../target/types/sports_program";
 import { Deployment } from "../deployment";
 import BN from "bn.js";
 
@@ -14,7 +14,7 @@ async function main() {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
-    const program = anchor.workspace.GameProgram as Program<GameProgram>;
+    const program = anchor.workspace.SportsProgram as Program<SportsProgram>;
 
     const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
@@ -35,7 +35,17 @@ async function main() {
         ],
         program.programId,
     );
-    const clubData = await program.account.club.fetch(club);
+    const [clubAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("authority"), club.toBuffer()],
+        program.programId,
+    );
+    const supplyTokenAccount = await getAssociatedTokenAddress(
+        tokenMint,
+        clubAuthority,
+        true,
+        TOKEN_PROGRAM_ID,
+    );
+
     const identifier2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const [credential] = anchor.web3.PublicKey.findProgramAddressSync(
         [
@@ -64,11 +74,14 @@ async function main() {
             operator: operatorKeypair.publicKey,
             admin: admin,
             club: club,
+            clubAuthority: clubAuthority,
             credential: credential,
             tokenMint: tokenMint,
             playerTokenAccount: userTokenAccount,
-            supplyTokenAccount: clubData.supplyTokenAccount,
+            supplyTokenAccount: supplyTokenAccount,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([operatorKeypair, userKeypair])
         .rpc({

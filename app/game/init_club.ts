@@ -3,8 +3,8 @@ import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
 import { Buffer } from "buffer";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { GameProgram } from "../../target/types/game_program";
+import {ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress, TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import { SportsProgram } from "../../target/types/sports_program";
 import { Deployment } from "../deployment";
 
 dotenv.config();
@@ -13,10 +13,11 @@ async function main() {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
-    const program = anchor.workspace.GameProgram as Program<GameProgram>;
+    const program = anchor.workspace.SportsProgram as Program<SportsProgram>;
 
     const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
+    const feeReceiver = ownerKeypair.publicKey;
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const tokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
     const identifier = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -34,22 +35,36 @@ async function main() {
         [Buffer.from("authority"), club.toBuffer()],
         program.programId,
     );
-    const supplyTokenAccountKeypair = anchor.web3.Keypair.generate();
+    const supplyTokenAccount = await getAssociatedTokenAddress(
+        tokenMint,
+        clubAuthority,
+        true,
+        TOKEN_PROGRAM_ID,
+    );
+    const feeTokenAccount = await getAssociatedTokenAddress(
+        tokenMint,
+        feeReceiver,
+        false,
+        TOKEN_PROGRAM_ID,
+    );
 
     const txId = await program
         .methods
         .initClub(identifier)
         .accounts({
             owner: ownerKeypair.publicKey,
+            feeReceiver: feeReceiver,
             admin: admin,
             club: club,
             clubAuthority: clubAuthority,
-            supplyTokenMint: tokenMint,
-            supplyTokenAccount: supplyTokenAccountKeypair.publicKey,
+            tokenMint: tokenMint,
+            supplyTokenAccount: supplyTokenAccount,
+            feeTokenAccount: feeTokenAccount,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([ownerKeypair, supplyTokenAccountKeypair])
+        .signers([ownerKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "confirmed",

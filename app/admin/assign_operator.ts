@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import * as bs58 from "bs58";
 import * as dotenv from "dotenv";
-import { GameProgram } from "../../target/types/game_program";
+import { SportsProgram } from "../../target/types/sports_program";
 import { Deployment } from "../deployment";
 
 dotenv.config();
@@ -11,7 +11,7 @@ async function main() {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
-    const program = anchor.workspace.GameProgram as Program<GameProgram>;
+    const program = anchor.workspace.SportsProgram as Program<SportsProgram>;
 
     const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
