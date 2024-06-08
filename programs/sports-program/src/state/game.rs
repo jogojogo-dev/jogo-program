@@ -8,6 +8,7 @@ pub struct Club {
     pub settle_active: bool,
     pub admin: Pubkey,
     pub owner: Pubkey,
+    pub token_mint: Pubkey,
     pub identifier: [u8; 32],
 
     pub staking: u64,
@@ -20,12 +21,18 @@ pub struct Club {
 impl Club {
     pub const SIZE: usize = std::mem::size_of::<Self>();
 
-    pub(crate) fn new(admin: Pubkey, owner: Pubkey, identifier: [u8; 32]) -> Self {
+    pub(crate) fn new(
+        admin: Pubkey,
+        owner: Pubkey,
+        token_mint: Pubkey,
+        identifier: [u8; 32],
+    ) -> Self {
         Self {
             initialized: true,
             settle_active: false,
             admin,
             owner,
+            token_mint,
             identifier,
             staking: 0,
             liquidity: 0,

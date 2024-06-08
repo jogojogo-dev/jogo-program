@@ -14,6 +14,7 @@ async function main() {
 
     const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
+    const feeReceiver = ownerKeypair.publicKey;
     const adminKeypair = anchor.web3.Keypair.generate();
 
     const txId = await program
@@ -21,6 +22,7 @@ async function main() {
         .initAdmin()
         .accounts({
             owner: ownerKeypair.publicKey,
+            feeReceiver: feeReceiver,
             admin: adminKeypair.publicKey,
             systemProgram: anchor.web3.SystemProgram.programId,
         })

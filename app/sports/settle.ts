@@ -6,7 +6,6 @@ import { Buffer } from "buffer";
 import {ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import { SportsProgram } from "../../target/types/sports_program";
 import { Deployment } from "../deployment";
-import BN from "bn.js";
 
 dotenv.config();
 
@@ -18,16 +17,21 @@ async function main() {
 
     const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
+    const feeReceiver = ownerKeypair.publicKey;
+    const userPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
+    const userKeypair = anchor.web3.Keypair.fromSecretKey(userPrivateKey);
+    const operatorPrivateKey = bs58.decode(process.env.OPERATOR_PRIVATE_KEY || "");
+    const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const tokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
-    const identifier = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const identifier1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const [club] = anchor.web3.PublicKey.findProgramAddressSync(
         [
             Buffer.from("club"),
             admin.toBuffer(),
             ownerKeypair.publicKey.toBuffer(),
             tokenMint.toBuffer(),
-            Buffer.from(identifier),
+            Buffer.from(identifier1),
         ],
         program.programId,
     );
@@ -41,28 +45,51 @@ async function main() {
         true,
         TOKEN_PROGRAM_ID,
     );
-    const ownerTokenAccount = await getAssociatedTokenAddress(
+    const feeTokenAccount = await getAssociatedTokenAddress(
         tokenMint,
-        ownerKeypair.publicKey,
+        feeReceiver,
+        false,
+        TOKEN_PROGRAM_ID,
+    );
+    
+    const identifier2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const [credential] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from("credential"),
+            club.toBuffer(),
+            userKeypair.publicKey.toBuffer(),
+            Buffer.from(identifier2),
+        ],
+        program.programId,
+    );
+    const userTokenAccount = await getAssociatedTokenAddress(
+        tokenMint,
+        userKeypair.publicKey,
         false,
         TOKEN_PROGRAM_ID,
     );
 
-    const amount = new BN(1_000_000_000_000);
+    const direction = 0;
     const txId = await program
         .methods
-        .deposit(amount)
+        .settle(direction)
         .accounts({
-            owner: ownerKeypair.publicKey,
+            player: userKeypair.publicKey,
+            operator: operatorKeypair.publicKey,
+            feeReceiver: feeReceiver,
+            admin: admin,
             club: club,
             clubAuthority: clubAuthority,
+            credential: credential,
             tokenMint: tokenMint,
-            ownerTokenAccount: ownerTokenAccount,
+            playerTokenAccount: userTokenAccount,
             supplyTokenAccount: supplyTokenAccount,
+            feeTokenAccount: feeTokenAccount,
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([ownerKeypair])
+        .signers([operatorKeypair, userKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "confirmed",

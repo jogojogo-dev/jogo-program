@@ -59,7 +59,6 @@ async function main() {
             clubAuthority: clubAuthority,
             tokenMint: tokenMint,
             supplyTokenAccount: supplyTokenAccount,
-            feeTokenAccount: feeTokenAccount,
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,

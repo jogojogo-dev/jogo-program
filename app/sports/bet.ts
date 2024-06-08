@@ -65,7 +65,7 @@ async function main() {
 
     const direction = 0;
     const stake = new BN(1_000_000);
-    const lock = new BN(1_000_000);
+    const lock = new BN(5_000_000);
     const txId = await program
         .methods
         .bet(identifier2, direction, stake, lock)

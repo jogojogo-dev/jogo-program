@@ -17,20 +17,16 @@ async function main() {
 
     const ownerPrivateKey = bs58.decode(process.env.OWNER_PRIVATE_KEY || "");
     const ownerKeypair = anchor.web3.Keypair.fromSecretKey(ownerPrivateKey);
-    const userPrivateKey = bs58.decode(process.env.USER_PRIVATE_KEY || "");
-    const userKeypair = anchor.web3.Keypair.fromSecretKey(userPrivateKey);
-    const operatorPrivateKey = bs58.decode(process.env.OPERATOR_PRIVATE_KEY || "");
-    const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const tokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
-    const identifier1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const identifier = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const [club] = anchor.web3.PublicKey.findProgramAddressSync(
         [
             Buffer.from("club"),
             admin.toBuffer(),
             ownerKeypair.publicKey.toBuffer(),
             tokenMint.toBuffer(),
-            Buffer.from(identifier1),
+            Buffer.from(identifier),
         ],
         program.programId,
     );
@@ -44,48 +40,34 @@ async function main() {
         true,
         TOKEN_PROGRAM_ID,
     );
-    
-    const identifier2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    const [credential] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-            Buffer.from("credential"),
-            club.toBuffer(),
-            userKeypair.publicKey.toBuffer(),
-            Buffer.from(identifier2),
-        ],
-        program.programId,
-    );
-    const userTokenAccount = await getAssociatedTokenAddress(
+    const ownerTokenAccount = await getAssociatedTokenAddress(
         tokenMint,
-        userKeypair.publicKey,
+        ownerKeypair.publicKey,
         false,
         TOKEN_PROGRAM_ID,
     );
 
-    const direction = 0;
     const txId = await program
         .methods
-        .settle(direction)
+        .closeClub()
         .accounts({
-            player: userKeypair.publicKey,
-            operator: operatorKeypair.publicKey,
-            admin: admin,
+            owner: ownerKeypair.publicKey,
             club: club,
             clubAuthority: clubAuthority,
-            credential: credential,
             tokenMint: tokenMint,
-            playerTokenAccount: userTokenAccount,
+            ownerTokenAccount: ownerTokenAccount,
             supplyTokenAccount: supplyTokenAccount,
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             tokenProgram: TOKEN_PROGRAM_ID,
         })
-        .signers([operatorKeypair, userKeypair])
+        .signers([ownerKeypair])
         .rpc({
             skipPreflight: true,
             commitment: "confirmed",
             maxRetries: 5,
         });
     console.log("transaction id:", txId);
+    console.log("club:", club.toString())
 }
 
 main().catch((err) => {

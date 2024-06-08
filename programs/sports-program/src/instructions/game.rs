@@ -51,13 +51,6 @@ pub struct InitClub<'info> {
         associated_token::authority = club_authority,
     )]
     pub supply_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(
-        init_if_needed,
-        payer = owner,
-        associated_token::mint = token_mint,
-        associated_token::authority = fee_receiver,
-    )]
-    pub fee_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     // system program
@@ -76,6 +69,15 @@ pub(crate) fn _init_club(ctx: Context<InitClub>, identifier: [u8; 32]) -> Result
         return Ok(());
     }
 
+    ctx.accounts.club.set_inner(
+        Club::new(
+            ctx.accounts.admin.key(),
+            ctx.accounts.owner.key(),
+            ctx.accounts.token_mint.key(),
+            identifier,
+        )
+    );
+
     let cpi_ctx = CpiContext::new(
         ctx.accounts.system_program.to_account_info(),
         Send {
@@ -84,14 +86,6 @@ pub(crate) fn _init_club(ctx: Context<InitClub>, identifier: [u8; 32]) -> Result
         },
     );
     send(cpi_ctx, CLUB_CREATION_FEE)?;
-
-    ctx.accounts.club.set_inner(
-        Club::new(
-            ctx.accounts.admin.key(),
-            ctx.accounts.owner.key(),
-            identifier,
-        )
-    );
 
     emit!(InitClubEvent {
         owner: ctx.accounts.owner.key(),
@@ -107,7 +101,7 @@ pub struct CloseClub<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     // program accounts
-    #[account(mut, close = owner)]
+    #[account(mut, close = owner, has_one = token_mint)]
     pub club: Account<'info, Club>,
     #[account(seeds = [b"authority", club.key().as_ref()], bump)]
     pub club_authority: SystemAccount<'info>,
@@ -135,12 +129,12 @@ pub(crate) fn _close_club(ctx: Context<CloseClub>) -> Result<()> {
     require!(ctx.accounts.club.can_close(), SportsError::CannotCloseClub);
 
     if ctx.accounts.supply_token_account.amount > 0 {
-        let club = ctx.accounts.club.key();
+        let club_key = ctx.accounts.club.key();
         let bumps = [ctx.bumps.club_authority];
         let signer_seeds = &[
             &[
                 b"authority".as_slice(),
-                club.as_ref(),
+                club_key.as_ref(),
                 &bumps,
             ][..],
         ];
@@ -186,7 +180,7 @@ pub(crate) fn _close_club(ctx: Context<CloseClub>) -> Result<()> {
 pub struct Deposit<'info> {
     pub owner: Signer<'info>,
     // program accounts
-    #[account(mut, has_one = owner)]
+    #[account(mut, has_one = owner, has_one = token_mint)]
     pub club: Account<'info, Club>,
     #[account(seeds = [b"authority", club.key().as_ref()], bump)]
     pub club_authority: SystemAccount<'info>,
@@ -241,7 +235,7 @@ pub(crate) fn _deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
 pub struct Withdraw<'info> {
     pub owner: Signer<'info>,
     // program accounts
-    #[account(mut, has_one = owner)]
+    #[account(mut, has_one = owner, has_one = token_mint)]
     pub club: Account<'info, Club>,
     #[account(seeds = [b"authority", club.key().as_ref()], bump)]
     pub club_authority: SystemAccount<'info>,
@@ -309,7 +303,7 @@ pub struct Bet<'info> {
     pub operator: Signer<'info>,
     // program accounts
     pub admin: Account<'info, Admin>,
-    #[account(mut, has_one = admin)]
+    #[account(mut, has_one = admin, has_one = token_mint)]
     pub club: Account<'info, Club>,
     #[account(seeds = [b"authority", club.key().as_ref()], bump)]
     pub club_authority: SystemAccount<'info>,
@@ -405,7 +399,7 @@ pub struct CancelBet<'info> {
     pub operator: Signer<'info>,
     // program accounts
     pub admin: Account<'info, Admin>,
-    #[account(mut, has_one = admin)]
+    #[account(mut, has_one = admin, has_one = token_mint)]
     pub club: Account<'info, Club>,
     #[account(seeds = [b"authority", club.key().as_ref()], bump)]
     pub club_authority: SystemAccount<'info>,
@@ -473,9 +467,11 @@ pub struct Settle<'info> {
     pub player: Signer<'info>,
     #[account(mut)]
     pub operator: Signer<'info>,
+    pub fee_receiver: SystemAccount<'info>,
     // program accounts
+    #[account(has_one = fee_receiver)]
     pub admin: Account<'info, Admin>,
-    #[account(mut, has_one = admin)]
+    #[account(mut, has_one = admin, has_one = token_mint)]
     pub club: Account<'info, Club>,
     #[account(seeds = [b"authority", club.key().as_ref()], bump)]
     pub club_authority: SystemAccount<'info>,
@@ -492,13 +488,16 @@ pub struct Settle<'info> {
     )]
     pub supply_token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(
-        mut,
+        init_if_needed,
+        payer = operator,
         associated_token::mint = token_mint,
-        associated_token::authority = admin.fee_receiver,
+        associated_token::authority = fee_receiver,
     )]
     pub fee_token_account: InterfaceAccount<'info, TokenAccount>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
+    // system program
+    pub system_program: Program<'info, System>,
 }
 
 #[event]

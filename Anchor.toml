@@ -7,7 +7,7 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-sports-program = "KRXNJkATAMf7B8ZGrNaVpu6FjvQWxfghqce6mquRcQQ"
+sports-program = "HjEBMq4XX5uw6HHULUUvHderJagW6jQf5fVgGuBNFian"
 
 [registry]
 url = "https://api.apr.dev"
@@ -19,8 +19,10 @@ wallet = ".keypairs/deployer.json"
 [scripts]
 init_admin = "yarn ts-node app/admin/init_admin.ts"
 assign_operator = "yarn ts-node app/admin/assign_operator.ts"
-init_club = "yarn ts-node app/game/init_club.ts"
-deposit = "yarn ts-node app/game/deposit.ts"
-withdraw = "yarn ts-node app/game/withdraw.ts"
-bet = "yarn ts-node app/game/bet.ts"
-settle = "yarn ts-node app/game/settle.ts"
+init_club = "yarn ts-node app/sports/init_club.ts"
+close_club = "yarn ts-node app/sports/close_club.ts"
+deposit = "yarn ts-node app/sports/deposit.ts"
+withdraw = "yarn ts-node app/sports/withdraw.ts"
+bet = "yarn ts-node app/sports/bet.ts"
+cancel_bet = "yarn ts-node app/sports/cancel_bet.ts"
+settle = "yarn ts-node app/sports/settle.ts"
