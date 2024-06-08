@@ -13,7 +13,7 @@ sports-program = "HjEBMq4XX5uw6HHULUUvHderJagW6jQf5fVgGuBNFian"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Devnet"
+cluster = "https://devnet.sonic.game"
 wallet = ".keypairs/deployer.json"
 
 [scripts]

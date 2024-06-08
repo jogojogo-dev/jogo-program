@@ -40,3 +40,20 @@ anchor upgrade -p <PROGRAM_ID> target/deploy/jogo_program.so
   }
 }
 ```
+
+## SPL
+
+### Create new SPL token
+```shell
+spl-token create-token --decimals=6 -u=https://devnet.sonic.game --fee-payer=.keypairs/deployer.json --mint-authority=FJBHhpLGrfbP2nb38Tc4ZejWPpj25T3ziruanYLQN2SJ
+```
+
+### Create token account
+```shell
+spl-token create-account --fee-payer=.keypairs/deployer.json -u=https://devnet.sonic.game --owner=FJBHhpLGrfbP2nb38Tc4ZejWPpj25T3ziruanYLQN2SJ 9ryjQuVLaKPB6auwzdzxNm2NE6omGDQKCGTCrWEaJK3
+```
+
+### Mint to
+```shell
+spl-token mint -u=https://devnet.sonic.game --fee-payer=.keypairs/deployer.json --mint-authority=.keypairs/deployer.json --recipient-owner=FJBHhpLGrfbP2nb38Tc4ZejWPpj25T3ziruanYLQN2SJ 9ryjQuVLaKPB6auwzdzxNm2NE6omGDQKCGTCrWEaJK3 1000000000000000
+```
