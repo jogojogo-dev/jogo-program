@@ -41,12 +41,6 @@ async function main() {
         true,
         TOKEN_PROGRAM_ID,
     );
-    const feeTokenAccount = await getAssociatedTokenAddress(
-        tokenMint,
-        feeReceiver,
-        false,
-        TOKEN_PROGRAM_ID,
-    );
 
     const txId = await program
         .methods
