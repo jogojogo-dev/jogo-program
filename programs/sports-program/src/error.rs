@@ -19,10 +19,14 @@ pub enum SportsError {
     InvalidLockAmount,
     #[msg("Insufficient liquidity")]
     InsufficientLiquidity,
-    #[msg("Settle is active")]
-    SettleActive,
     
     // Game
+    #[msg("Invalid Identifier")]
+    InvalidIdentifier,
+    #[msg("Game can not close")]
+    GameCannotClose,
+    
+    // Credential
     #[msg("Invalid direction")]
     InvalidDirection,
 }

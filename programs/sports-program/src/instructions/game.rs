@@ -8,7 +8,7 @@ use anchor_spl::{
 };
 
 use crate::{
-    state::{Admin, Club, Credential},
+    state::{Admin, Club, Game, Credential},
     error::SportsError,
 };
 
@@ -69,14 +69,12 @@ pub(crate) fn _init_club(ctx: Context<InitClub>, identifier: [u8; 32]) -> Result
         return Ok(());
     }
 
-    ctx.accounts.club.set_inner(
-        Club::new(
-            ctx.accounts.admin.key(),
-            ctx.accounts.owner.key(),
-            ctx.accounts.token_mint.key(),
-            identifier,
-        )
-    );
+    // initialize club
+    ctx.accounts.club.initialized = true;
+    ctx.accounts.club.admin = ctx.accounts.admin.key();
+    ctx.accounts.club.owner = ctx.accounts.owner.key();
+    ctx.accounts.club.token_mint = ctx.accounts.token_mint.key();
+    ctx.accounts.club.identifier = identifier;
 
     let cpi_ctx = CpiContext::new(
         ctx.accounts.system_program.to_account_info(),
@@ -101,7 +99,12 @@ pub struct CloseClub<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     // program accounts
-    #[account(mut, close = owner, has_one = token_mint)]
+    #[account(
+        mut,
+        close = owner,
+        has_one = token_mint,
+        constraint = club.can_close() @ SportsError::CannotCloseClub,
+    )]
     pub club: Account<'info, Club>,
     #[account(seeds = [b"authority", club.key().as_ref()], bump)]
     pub club_authority: SystemAccount<'info>,
@@ -126,8 +129,6 @@ pub struct CloseClubEvent {
 }
 
 pub(crate) fn _close_club(ctx: Context<CloseClub>) -> Result<()> {
-    require!(ctx.accounts.club.can_close(), SportsError::CannotCloseClub);
-
     if ctx.accounts.supply_token_account.amount > 0 {
         let club_key = ctx.accounts.club.key();
         let bumps = [ctx.bumps.club_authority];
@@ -296,10 +297,97 @@ pub(crate) fn _withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
 }
 
 #[derive(Accounts)]
+#[instruction(identifier: [u8; 32])]
+pub struct StartGame<'info> {
+    #[account(
+        mut,
+        constraint = admin.is_operator(operator.key) @ SportsError::InvalidOperator,
+    )]
+    pub operator: Signer<'info>,
+    // program accounts
+    pub admin: Account<'info, Admin>,
+    #[account(mut, has_one = admin)]
+    pub club: Account<'info, Club>,
+    #[account(
+        init,
+        payer = operator,
+        space = 8 + Game::SIZE,
+        seeds = [
+            b"game",
+            club.key().as_ref(),
+            &identifier,
+        ],
+        bump,
+    )]
+    pub game: Account<'info, Game>,
+    // system program
+    pub system_program: Program<'info, System>,
+}
+
+#[event]
+pub struct StartGameEvent {
+    pub club: Pubkey,
+    pub game: Pubkey,
+}
+
+pub(crate) fn _start_game(ctx: Context<StartGame>, identifier: [u8; 32]) -> Result<()> {
+    ctx.accounts.game.club = ctx.accounts.club.key();
+    ctx.accounts.game.identifier = identifier;
+
+    emit!(StartGameEvent {
+        club: ctx.accounts.club.key(),
+        game: ctx.accounts.game.key(),
+    });
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+#[instruction(cancel: bool)]
+pub struct CloseGame<'info> {
+    #[account(
+        mut,
+        constraint = admin.is_operator(operator.key) @ SportsError::InvalidOperator,
+    )]
+    pub operator: Signer<'info>,
+    // program accounts
+    pub admin: Account<'info, Admin>,
+    #[account(mut, has_one = admin)]
+    pub club: Account<'info, Club>,
+    #[account(
+        mut,
+        close = operator,
+        has_one = club,
+        constraint = game.can_close(cancel) @ SportsError::GameCannotClose,
+    )]
+    pub game: Account<'info, Game>,
+}
+
+#[event]
+pub struct CloseGameEvent {
+    pub club: Pubkey,
+    pub game: Pubkey,
+}
+
+pub(crate) fn _close_game(ctx: Context<CloseGame>, _cancel: bool) -> Result<()> {
+    ctx.accounts.club.close_game(&ctx.accounts.game);
+
+    emit!(CloseGameEvent {
+        club: ctx.accounts.club.key(),
+        game: ctx.accounts.game.key(),
+    });
+
+    Ok(())
+}
+
+#[derive(Accounts)]
 #[instruction(identifier: [u8; 32], direction: u8, stake: u64, lock: u64)]
 pub struct Bet<'info> {
     pub player: Signer<'info>,
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = admin.is_operator(operator.key) @ SportsError::InvalidOperator,
+    )]
     pub operator: Signer<'info>,
     // program accounts
     pub admin: Account<'info, Admin>,
@@ -307,6 +395,12 @@ pub struct Bet<'info> {
     pub club: Account<'info, Club>,
     #[account(seeds = [b"authority", club.key().as_ref()], bump)]
     pub club_authority: SystemAccount<'info>,
+    #[account(
+        mut,
+        has_one = club,
+        constraint = game.identifier == identifier,
+    )]
+    pub game: Account<'info, Game>,
     #[account(
         init,
         payer = operator,
@@ -353,11 +447,6 @@ pub(crate) fn _bet(
     stake: u64,
     lock: u64,
 ) -> Result<()> {
-    require!(
-        ctx.accounts.admin.is_operator(ctx.accounts.operator.key),
-        SportsError::InvalidOperator,
-    );
-
     let cpi_ctx = CpiContext::new(
         ctx.accounts.token_program.to_account_info(),
         TransferChecked {
@@ -371,7 +460,8 @@ pub(crate) fn _bet(
 
     // update club
     ctx.accounts.club.bet(direction, stake, lock)?;
-
+    // update game
+    ctx.accounts.game.bet(stake);
     // initialize credential
     ctx.accounts.credential.club = ctx.accounts.club.key();
     ctx.accounts.credential.player = ctx.accounts.player.key();
@@ -393,9 +483,12 @@ pub(crate) fn _bet(
 }
 
 #[derive(Accounts)]
-pub struct CancelBet<'info> {
+pub struct CloseBet<'info> {
     pub player: Signer<'info>,
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = admin.is_operator(operator.key) @ SportsError::InvalidOperator,
+    )]
     pub operator: Signer<'info>,
     // program accounts
     pub admin: Account<'info, Admin>,
@@ -403,6 +496,12 @@ pub struct CancelBet<'info> {
     pub club: Account<'info, Club>,
     #[account(seeds = [b"authority", club.key().as_ref()], bump)]
     pub club_authority: SystemAccount<'info>,
+    #[account(
+        mut,
+        has_one = club,
+        constraint = game.identifier == credential.identifier @ SportsError::InvalidIdentifier,
+    )]
+    pub game: Account<'info, Game>,
     #[account(mut, close = operator, has_one = club, has_one = player)]
     pub credential: Account<'info, Credential>,
     // token accounts
@@ -420,39 +519,40 @@ pub struct CancelBet<'info> {
 }
 
 #[event]
-pub struct CancelBetEvent {
+pub struct CloseBetEvent {
     pub club: Pubkey,
     pub credential: Pubkey,
     pub player: Pubkey,
 }
 
-pub(crate) fn _cancel_bet(ctx: Context<CancelBet>) -> Result<()> {
-    ctx.accounts.club.cancel_bet(&ctx.accounts.credential)?;
+pub(crate) fn _close_bet(ctx: Context<CloseBet>) -> Result<()> {
+    // update club
+    ctx.accounts.club.close_bet(&ctx.accounts.credential)?;
+    // update game
+    ctx.accounts.game.close_bet(ctx.accounts.credential.stake);
 
-    if ctx.accounts.credential.stake > 0 {
-        let club = ctx.accounts.club.key();
-        let bumps = [ctx.bumps.club_authority];
-        let signer_seeds = &[
-            &[
-                b"authority".as_slice(),
-                club.as_ref(),
-                &bumps,
-            ][..],
-        ];
-        let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
-            TransferChecked {
-                from: ctx.accounts.supply_token_account.to_account_info(),
-                mint: ctx.accounts.token_mint.to_account_info(),
-                to: ctx.accounts.player_token_account.to_account_info(),
-                authority: ctx.accounts.club_authority.to_account_info(),
-            },
-            signer_seeds,
-        );
-        transfer_checked(cpi_ctx, ctx.accounts.credential.stake, ctx.accounts.token_mint.decimals)?;
-    }
+    let club = ctx.accounts.club.key();
+    let bumps = [ctx.bumps.club_authority];
+    let signer_seeds = &[
+        &[
+            b"authority".as_slice(),
+            club.as_ref(),
+            &bumps,
+        ][..],
+    ];
+    let cpi_ctx = CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        TransferChecked {
+            from: ctx.accounts.supply_token_account.to_account_info(),
+            mint: ctx.accounts.token_mint.to_account_info(),
+            to: ctx.accounts.player_token_account.to_account_info(),
+            authority: ctx.accounts.club_authority.to_account_info(),
+        },
+        signer_seeds,
+    );
+    transfer_checked(cpi_ctx, ctx.accounts.credential.stake, ctx.accounts.token_mint.decimals)?;
 
-    emit!(CancelBetEvent {
+    emit!(CloseBetEvent {
         club: ctx.accounts.club.key(),
         credential: ctx.accounts.credential.key(),
         player: ctx.accounts.player.key(),
@@ -465,7 +565,10 @@ pub(crate) fn _cancel_bet(ctx: Context<CancelBet>) -> Result<()> {
 #[instruction(direction: u8)]
 pub struct Settle<'info> {
     pub player: Signer<'info>,
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = admin.is_operator(operator.key) @ SportsError::InvalidOperator,
+    )]
     pub operator: Signer<'info>,
     pub fee_receiver: SystemAccount<'info>,
     // program accounts
@@ -475,6 +578,15 @@ pub struct Settle<'info> {
     pub club: Account<'info, Club>,
     #[account(seeds = [b"authority", club.key().as_ref()], bump)]
     pub club_authority: SystemAccount<'info>,
+    #[account(
+        seeds = [
+            b"game",
+            club.key().as_ref(),
+            &credential.identifier,
+        ],
+        bump,
+    )]
+    pub game: SystemAccount<'info>,
     #[account(mut, close = operator, has_one = club, has_one = player)]
     pub credential: Account<'info, Credential>,
     // token accounts
@@ -510,11 +622,6 @@ pub struct SettleEvent {
 }
 
 pub(crate) fn _settle(ctx: Context<Settle>, direction: u8) -> Result<()> {
-    require!(
-        ctx.accounts.admin.is_operator(ctx.accounts.operator.key),
-        SportsError::InvalidOperator,
-    );
-
     // update club
     let win = direction == ctx.accounts.credential.direction;
     ctx.accounts.club.settle(win, &ctx.accounts.credential)?;

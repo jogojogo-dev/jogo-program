@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 
 use instructions::*;
 
-declare_id!("HjEBMq4XX5uw6HHULUUvHderJagW6jQf5fVgGuBNFian");
+declare_id!("4BGS57PnHpNr3Sm9yAfVyKrSPweTC8TScKd8QzoLg6qa");
 
 #[program]
 pub mod sports_program {
@@ -43,7 +43,15 @@ pub mod sports_program {
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         _withdraw(ctx, amount)
     }
+
+    pub fn start_game(ctx: Context<StartGame>, identifier: [u8; 32]) -> Result<()> {
+        _start_game(ctx, identifier)
+    }
     
+    pub fn close_game(ctx: Context<CloseGame>, cancel: bool) -> Result<()> {
+        _close_game(ctx, cancel)
+    }
+
     pub fn bet(
         ctx: Context<Bet>,
         identifier: [u8; 32],
@@ -54,8 +62,8 @@ pub mod sports_program {
         _bet(ctx, identifier, direction, stake, lock)
     }
     
-    pub fn cancel_bet(ctx: Context<CancelBet>) -> Result<()> {
-        _cancel_bet(ctx)
+    pub fn close_bet(ctx: Context<CloseBet>) -> Result<()> {
+        _close_bet(ctx)
     }
     
     pub fn settle(ctx: Context<Settle>, direction: u8) -> Result<()> {

@@ -6,6 +6,6 @@
 
 // Sonic deployment
 export const Deployment = {
-    admin: "8EtRRMpNkJ52E48W4Tw9GyZPF9hPAenD2oDXetcjWdhf",
+    admin: "DTZBGHE6z6bi67jRQsBYR1eFD8tSN2KUrDkVFn487re7",
     tokenMint: "9ryjQuVLaKPB6auwzdzxNm2NE6omGDQKCGTCrWEaJK3",
 }
