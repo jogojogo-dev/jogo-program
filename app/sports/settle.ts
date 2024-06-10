@@ -24,14 +24,14 @@ async function main() {
     const operatorKeypair = anchor.web3.Keypair.fromSecretKey(operatorPrivateKey);
     const admin = new anchor.web3.PublicKey(Deployment.admin);
     const tokenMint = new anchor.web3.PublicKey(Deployment.tokenMint);
-    const identifier1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const club_identifier = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const [club] = anchor.web3.PublicKey.findProgramAddressSync(
         [
             Buffer.from("club"),
             admin.toBuffer(),
             ownerKeypair.publicKey.toBuffer(),
             tokenMint.toBuffer(),
-            Buffer.from(identifier1),
+            Buffer.from(club_identifier),
         ],
         program.programId,
     );
@@ -51,14 +51,22 @@ async function main() {
         false,
         TOKEN_PROGRAM_ID,
     );
-    
-    const identifier2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    const game_identifier = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const [game] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from("game"),
+            club.toBuffer(),
+            Buffer.from(game_identifier),
+        ],
+        program.programId,
+    );
     const [credential] = anchor.web3.PublicKey.findProgramAddressSync(
         [
             Buffer.from("credential"),
             club.toBuffer(),
             userKeypair.publicKey.toBuffer(),
-            Buffer.from(identifier2),
+            Buffer.from(game_identifier),
         ],
         program.programId,
     );
@@ -80,6 +88,7 @@ async function main() {
             admin: admin,
             club: club,
             clubAuthority: clubAuthority,
+            game: game,
             credential: credential,
             tokenMint: tokenMint,
             playerTokenAccount: userTokenAccount,
